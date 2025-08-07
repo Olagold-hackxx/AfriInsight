@@ -8,9 +8,9 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "AfriData Insights - Empowering African Communities with AI-Driven Data",
-  description: "Decentralized platform for African researchers, NGOs, and developers to upload, explore, and interact with public datasets while generating AI-powered insights.",
-  keywords: "Africa, data, AI, insights, Web3, IPFS, Filecoin, agriculture, health, education, climate",
+  title: "DeHug - The Decentralized Hugging Face",
+  description: "A decentralized, open platform for hosting, sharing, and accessing machine learning models and datasets. Built on Filecoin/IPFS for permanent, censorship-resistant storage.",
+  keywords: "machine learning, AI models, datasets, decentralized, IPFS, Filecoin, Hugging Face, open source, ML",
 }
 
 export default function RootLayout({

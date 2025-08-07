@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Database, Brain, Users, BarChart3, Upload, Search, MessageSquare, Sparkles, Zap, TrendingUp, Play, ChevronDown } from 'lucide-react'
+import { ArrowRight, Brain, Globe, Users, BarChart3, Upload, Search, Cpu, Sparkles, Zap, TrendingUp, Play, ChevronDown, Database, Code, FileText } from 'lucide-react'
 import Link from "next/link"
 
 export default function HomePage() {
@@ -26,74 +26,74 @@ export default function HomePage() {
     {
       icon: Upload,
       title: "Decentralized Storage",
-      description: "Upload datasets to IPFS/Filecoin for permanent, censorship-resistant access",
+      description: "Upload ML models and datasets to IPFS/Filecoin for permanent, censorship-resistant access",
       color: "from-green-400 to-emerald-600",
       delay: "0ms"
     },
     {
       icon: Search,
-      title: "Dataset Explorer",
-      description: "Interactive data exploration with filtering, sorting, and visualization tools",
+      title: "Model Discovery",
+      description: "Discover models by task, domain, or performance metrics with advanced filtering",
       color: "from-blue-400 to-cyan-600",
       delay: "100ms"
     },
     {
-      icon: Brain,
-      title: "AI Insights",
-      description: "Generate actionable insights with pre-built models and conversational AI",
+      icon: Cpu,
+      title: "Decentralized Inference",
+      description: "Run models in-browser or via decentralized compute networks like Bacalhau",
       color: "from-purple-400 to-violet-600",
       delay: "200ms"
     },
     {
-      icon: MessageSquare,
-      title: "Ask AI",
-      description: "Natural language queries to extract insights from your data",
+      icon: Code,
+      title: "Model Cards",
+      description: "Immutable metadata, licensing info, and usage examples for every model",
       color: "from-orange-400 to-red-500",
       delay: "300ms"
     },
     {
       icon: Users,
       title: "Community Driven",
-      description: "Collaborate with researchers, NGOs, and developers across Africa",
+      description: "Reward contributors and curate high-quality models through community governance",
       color: "from-pink-400 to-rose-600",
       delay: "400ms"
     }
   ]
 
   const stats = [
-    { value: "50K+", label: "Datasets", icon: Database },
-    { value: "12M+", label: "Data Points", icon: BarChart3 },
-    { value: "2.5K+", label: "Researchers", icon: Users },
+    { value: "2.5K+", label: "Models", icon: Brain },
+    { value: "15K+", label: "Datasets", icon: Database },
+    { value: "850+", label: "Contributors", icon: Users },
   ]
 
-  const useCases = [
+  const modelTypes = [
     {
-      title: "Agriculture",
-      description: "Predict crop yields, optimize farming practices, and forecast weather patterns",
-      icon: "🌾",
-      gradient: "from-green-500/20 to-emerald-500/20",
-      tags: ["Crop Prediction", "Weather Analysis", "Soil Health"]
-    },
-    {
-      title: "Public Health",
-      description: "Track disease outbreaks, analyze health trends, and support policy decisions",
-      icon: "🏥",
-      gradient: "from-red-500/20 to-pink-500/20",
-      tags: ["Disease Tracking", "Health Analytics", "Policy Support"]
-    },
-    {
-      title: "Education",
-      description: "Analyze enrollment patterns, identify learning gaps, optimize resources",
-      icon: "📚",
+      title: "Natural Language Processing",
+      description: "Text classification, generation, translation, and language understanding models",
+      icon: "🔤",
       gradient: "from-blue-500/20 to-cyan-500/20",
-      tags: ["Enrollment Analysis", "Performance Metrics", "Resource Planning"]
+      tags: ["BERT", "GPT", "T5", "Translation"]
     },
     {
-      title: "Climate",
-      description: "Monitor environmental changes, predict impacts, support sustainability",
-      icon: "🌡️",
-      gradient: "from-teal-500/20 to-green-500/20",
-      tags: ["Climate Monitoring", "Impact Assessment", "Sustainability"]
+      title: "Computer Vision",
+      description: "Image classification, object detection, segmentation, and generative models",
+      icon: "👁️",
+      gradient: "from-purple-500/20 to-violet-500/20",
+      tags: ["ResNet", "YOLO", "Stable Diffusion", "ViT"]
+    },
+    {
+      title: "Audio & Speech",
+      description: "Speech recognition, text-to-speech, music generation, and audio analysis",
+      icon: "🎵",
+      gradient: "from-green-500/20 to-emerald-500/20",
+      tags: ["Whisper", "WaveNet", "Tacotron", "AudioCraft"]
+    },
+    {
+      title: "Multimodal",
+      description: "Models that work across text, images, audio, and other modalities",
+      icon: "🌐",
+      gradient: "from-orange-500/20 to-red-500/20",
+      tags: ["CLIP", "DALL-E", "GPT-4V", "Flamingo"]
     }
   ]
 
@@ -139,33 +139,34 @@ export default function HomePage() {
                 className="mb-6 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30 text-blue-300 px-4 py-2 text-sm font-medium backdrop-blur-sm"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                Powered by Web3 & AI
+                Powered by IPFS & Filecoin
               </Badge>
               
               <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8">
-                <span className="bg-gradient-to-r from-white via-blue-100 to-green-100 bg-clip-text text-transparent">
-                  AfriData
+                <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+                  DeHug
                 </span>
                 <br />
-                <span className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-pulse">
-                  Insights
+                <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-600 bg-clip-text text-transparent animate-pulse">
+                  Decentralized ML
                 </span>
               </h1>
               
               <p className="mt-6 text-xl leading-8 text-gray-300 max-w-4xl mx-auto">
-                Empowering African communities with{" "}
-                <span className="text-blue-400 font-semibold">AI-driven insights</span> from 
-                decentralized public data. Upload, explore, and interact with datasets while 
-                generating actionable intelligence for agriculture, health, education, and climate.
+                The decentralized alternative to Hugging Face. Host, share, and access{" "}
+                <span className="text-blue-400 font-semibold">machine learning models</span> and{" "}
+                <span className="text-purple-400 font-semibold">datasets</span> on a{" "}
+                <span className="text-green-400 font-semibold">censorship-resistant</span> platform 
+                built on IPFS and Filecoin.
               </p>
               
               <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
                 <Link href="/upload">
                   <Button 
                     size="lg" 
-                    className="group bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="group bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                   >
-                    Start Exploring Data
+                    Upload Your Model
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -215,15 +216,15 @@ export default function HomePage() {
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Democratizing Data for
+                Democratizing
               </span>
               <br />
-              <span className="bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
-                Africa
+              <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                Machine Learning
               </span>
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Bridge the gap between raw data and real-world impact with our comprehensive AI-powered platform
+              Build the future of AI with decentralized infrastructure that puts control back in the hands of the community
             </p>
           </div>
 
@@ -262,45 +263,45 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Use Cases Section */}
+      {/* Model Types Section */}
       <section className="relative z-10 py-32 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Real-World
+                Every Type of
               </span>
               <br />
               <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-                Applications
+                AI Model
               </span>
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              See how AfriData Insights is making a difference across key sectors in Africa
+              From language models to computer vision, host and discover cutting-edge AI models across all domains
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {useCases.map((useCase, index) => (
+            {modelTypes.map((modelType, index) => (
               <div
-                key={useCase.title}
+                key={modelType.title}
                 className="group cursor-pointer"
                 style={{ 
                   animation: `fadeInUp 0.6s ease-out ${index * 100}ms both`
                 }}
               >
-                <div className={`bg-gradient-to-br ${useCase.gradient} backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:border-white/20 transition-all duration-500 hover:scale-105`}>
+                <div className={`bg-gradient-to-br ${modelType.gradient} backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:border-white/20 transition-all duration-500 hover:scale-105`}>
                   <div className="flex items-center mb-6">
-                    <div className="text-4xl mr-4">{useCase.icon}</div>
-                    <h3 className="text-2xl font-bold text-white">{useCase.title}</h3>
+                    <div className="text-4xl mr-4">{modelType.icon}</div>
+                    <h3 className="text-2xl font-bold text-white">{modelType.title}</h3>
                   </div>
                   
                   <p className="text-gray-300 mb-6 leading-relaxed">
-                    {useCase.description}
+                    {modelType.description}
                   </p>
                   
                   <div className="flex flex-wrap gap-2">
-                    {useCase.tags.map(tag => (
+                    {modelType.tags.map(tag => (
                       <Badge 
                         key={tag} 
                         variant="secondary" 
@@ -317,52 +318,55 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* AI Showcase Section */}
+      {/* Decentralization Benefits */}
       <section className="relative z-10 py-32 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Powered by
+                Why
               </span>
               <br />
               <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                Advanced AI
+                Decentralized?
               </span>
             </h2>
           </div>
 
           <div className="relative">
-            {/* AI Demo Interface */}
             <div className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm rounded-3xl border border-white/10 p-8 md:p-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div>
                   <h3 className="text-3xl font-bold text-white mb-6">
-                    Ask AI Anything About Your Data
+                    Own Your AI Models
                   </h3>
                   <p className="text-gray-300 mb-8 text-lg">
-                    Our advanced AI models can analyze complex datasets and provide 
-                    insights in natural language, making data science accessible to everyone.
+                    No single point of failure, no corporate gatekeepers. Your models 
+                    and datasets are stored permanently on IPFS/Filecoin, accessible 
+                    to anyone, anywhere, anytime.
                   </p>
                   
                   <div className="space-y-4">
                     <div className="flex items-center text-green-400">
                       <Zap className="h-5 w-5 mr-3" />
-                      <span>Real-time analysis</span>
+                      <span>Censorship resistant</span>
                     </div>
                     <div className="flex items-center text-blue-400">
-                      <TrendingUp className="h-5 w-5 mr-3" />
-                      <span>Predictive modeling</span>
+                      <Globe className="h-5 w-5 mr-3" />
+                      <span>Globally accessible</span>
                     </div>
                     <div className="flex items-center text-purple-400">
-                      <Brain className="h-5 w-5 mr-3" />
-                      <span>Natural language queries</span>
+                      <Users className="h-5 w-5 mr-3" />
+                      <span>Community governed</span>
+                    </div>
+                    <div className="flex items-center text-orange-400">
+                      <TrendingUp className="h-5 w-5 mr-3" />
+                      <span>Contributor rewards</span>
                     </div>
                   </div>
                 </div>
                 
                 <div className="relative">
-                  {/* Mock AI Interface */}
                   <div className="bg-black/30 rounded-2xl border border-white/20 p-6">
                     <div className="flex items-center mb-4">
                       <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
@@ -371,23 +375,25 @@ export default function HomePage() {
                     </div>
                     
                     <div className="space-y-4">
-                      <div className="bg-blue-500/20 rounded-lg p-3 ml-8">
-                        <p className="text-blue-300 text-sm">
-                          "Which region in Kenya had the highest crop yield in 2023?"
-                        </p>
+                      <div className="flex items-center justify-between p-3 bg-green-500/20 rounded-lg">
+                        <span className="text-green-300 text-sm">✓ Model uploaded to IPFS</span>
+                        <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
+                          Permanent
+                        </Badge>
                       </div>
                       
-                      <div className="bg-green-500/20 rounded-lg p-3 mr-8">
-                        <p className="text-green-300 text-sm">
-                          Based on the agricultural dataset, Western Kenya had the highest 
-                          maize yield at 3,100 tons in 2023, with optimal rainfall of 1,450mm 
-                          and soil pH of 6.8.
-                        </p>
+                      <div className="flex items-center justify-between p-3 bg-blue-500/20 rounded-lg">
+                        <span className="text-blue-300 text-sm">✓ Metadata stored on-chain</span>
+                        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                          Immutable
+                        </Badge>
                       </div>
                       
-                      <div className="flex items-center text-gray-400 text-xs">
-                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse mr-2"></div>
-                        AI is typing...
+                      <div className="flex items-center justify-between p-3 bg-purple-500/20 rounded-lg">
+                        <span className="text-purple-300 text-sm">✓ Globally accessible</span>
+                        <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
+                          24/7
+                        </Badge>
                       </div>
                     </div>
                   </div>
@@ -404,37 +410,37 @@ export default function HomePage() {
           <div className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm rounded-3xl border border-white/10 p-12 md:p-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Ready to Transform
+                Ready to
               </span>
               <br />
-              <span className="bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
-                Data into Impact?
+              <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                Decentralize AI?
               </span>
             </h2>
             
             <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-              Join the growing community of researchers, NGOs, and developers using 
-              AfriData Insights to drive positive change across Africa.
+              Join the movement to democratize machine learning. Upload your first model 
+              or explore the growing collection of community-contributed AI models.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link href="/upload">
                 <Button 
                   size="lg" 
-                  className="group bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="group bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                 >
-                  Upload Your First Dataset
+                  Upload Your Model
                   <Upload className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
               
-              <Link href="/datasets">
+              <Link href="/models">
                 <Button 
                   variant="outline" 
                   size="lg"
                   className="group border-gray-600 text-gray-300 hover:bg-white/10 px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 backdrop-blur-sm"
                 >
-                  Explore Existing Data
+                  Explore Models
                   <Search className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
