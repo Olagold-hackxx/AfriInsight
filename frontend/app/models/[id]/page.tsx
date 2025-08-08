@@ -87,7 +87,7 @@ export default function ModelDetailPage({ params }: { params: { id: string } }) 
 
   const handleDownload = async () => {
     try {
-      await DeHugAPI.downloadFromFilecoin(mockModel.title, mockModel.ipfsHash, 'ui')
+      await DeHugAPI.downloadFromFilecoin(mockModel.title, 'ui')
     } catch (error) {
       console.error("Download failed:", error)
     }

@@ -103,7 +103,7 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
 
   const handleDownload = async () => {
     try {
-      await DeHugAPI.downloadFromFilecoin(mockDataset.title, mockDataset.ipfsHash, 'ui')
+      await DeHugAPI.downloadFromFilecoin(mockDataset.title, 'ui')
     } catch (error) {
       console.error("Download failed:", error)
     }

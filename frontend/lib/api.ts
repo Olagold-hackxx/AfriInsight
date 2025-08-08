@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-// Create axios instance
+// Create axios instance with base configuration
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
   timeout: 10000,
@@ -26,12 +26,12 @@ export interface NFTMetadata {
   name: string
   description: string
   image: string
-  attributes: NFTAttribute[]
   contractAddress: string
   currentValue: number
   mintedAt: string
   lastSyncedAt: string
   openseaUrl: string
+  attributes: NFTAttribute[]
 }
 
 export interface UserUpload {
@@ -60,10 +60,26 @@ export interface PortfolioStats {
   totalEngagement: number
 }
 
+export interface EngagementMetrics {
+  downloads: number
+  likes: number
+  views: number
+  forks: number
+  comments: number
+  stars: number
+}
+
+export interface SyncResult {
+  success: boolean
+  newValue: number
+  transactionHash: string
+  error?: string
+}
+
 // API Functions
-export const DeHugAPI = {
+export class DeHugAPI {
   // Track download
-  async trackDownload(itemName: string, source: 'ui' | 'sdk'): Promise<void> {
+  static async trackDownload(itemName: string, source: 'sdk' | 'ui'): Promise<void> {
     try {
       const formData = new FormData()
       formData.append('item_name', itemName)
@@ -76,210 +92,220 @@ export const DeHugAPI = {
       })
     } catch (error) {
       console.warn('Error tracking download:', error)
+      // Graceful fallback - don't break the download flow
     }
-  },
+  }
 
   // Get download stats
-  async getDownloadStats(): Promise<Record<string, DownloadStats>> {
+  static async getDownloadStats(): Promise<Record<string, DownloadStats>> {
     try {
       const response = await apiClient.get('/track/stats')
       return response.data
     } catch (error) {
-      console.warn('Error fetching stats:', error)
+      console.warn('Error fetching download stats:', error)
       return {}
     }
-  },
+  }
 
   // Download from Filecoin/IPFS
-  async downloadFromFilecoin(itemName: string, source: 'ui' | 'sdk' = 'ui'): Promise<string> {
+  static async downloadFromFilecoin(itemName: string, source: 'sdk' | 'ui' = 'ui'): Promise<string> {
     try {
       // Track the download
       await this.trackDownload(itemName, source)
       
-      // Simulate IPFS gateway URL
+      // Return IPFS gateway URL (mock for now)
       const ipfsHash = `Qm${Math.random().toString(36).substring(2, 15)}`
-      const downloadUrl = `https://ipfs.io/ipfs/${ipfsHash}/${itemName}`
-      
-      // Create download link
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.download = itemName
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      
-      return downloadUrl
+      return `https://gateway.pinata.cloud/ipfs/${ipfsHash}`
     } catch (error) {
-      console.error('Download failed:', error)
+      console.warn('Error downloading from Filecoin:', error)
       throw error
     }
-  },
+  }
 
   // Get user uploads (mock data)
-  async getUserUploads(): Promise<UserUpload[]> {
-    // Mock data - replace with real API call
-    return [
-      {
-        id: '1',
-        name: 'African Language Model v2.1',
-        description: 'Advanced multilingual model trained on 15 African languages including Swahili, Yoruba, Amharic, and Zulu.',
-        type: 'model',
-        author: 'Dr. Amara Okafor',
-        uploadedAt: '2024-01-15T10:30:00Z',
-        fileSize: '2.3 GB',
-        license: 'MIT',
-        tags: ['nlp', 'multilingual', 'african-languages', 'transformer'],
-        downloads: { sdk: 1247, ui: 856, total: 2103 },
-        likes: 342,
-        views: 5678,
-        forks: 89,
-        stars: 456,
-        comments: 67,
-        nft: {
-          tokenId: '1001',
-          name: 'African Language Model NFT',
-          description: 'NFT representing the African Language Model v2.1',
-          image: '/african-ai-nft.png',
-          attributes: [
-            { trait_type: 'Type', value: 'Language Model' },
-            { trait_type: 'Languages', value: 15 },
-            { trait_type: 'Rarity', value: 'Epic' },
-            { trait_type: 'Performance', value: 'High' }
-          ],
-          contractAddress: '0x742d35Cc6634C0532925a3b8D4C9db96DfB3f681',
-          currentValue: 0.847,
-          mintedAt: '2024-01-15T10:35:00Z',
-          lastSyncedAt: '2024-01-20T14:22:00Z',
-          openseaUrl: 'https://opensea.io/assets/ethereum/0x742d35Cc6634C0532925a3b8D4C9db96DfB3f681/1001'
+  static async getUserUploads(): Promise<UserUpload[]> {
+    try {
+      // Mock data for development
+      return [
+        {
+          id: '1',
+          name: 'African Language Model v2.1',
+          description: 'Advanced multilingual model trained on 15 African languages including Swahili, Yoruba, Amharic, and Zulu.',
+          type: 'model',
+          author: 'Dr. Amara Okafor',
+          uploadedAt: '2024-01-15T10:30:00Z',
+          fileSize: '2.3 GB',
+          license: 'Apache 2.0',
+          tags: ['nlp', 'multilingual', 'african-languages', 'transformer'],
+          downloads: { sdk: 1247, ui: 856, total: 2103 },
+          likes: 342,
+          views: 5678,
+          forks: 89,
+          stars: 234,
+          comments: 67,
+          nft: {
+            tokenId: '1001',
+            name: 'African Language Model NFT',
+            description: 'Represents ownership and contribution to African NLP advancement',
+            image: '/african-ai-nft.png',
+            contractAddress: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
+            currentValue: 0.847,
+            mintedAt: '2024-01-15T10:30:00Z',
+            lastSyncedAt: '2024-01-20T14:22:00Z',
+            openseaUrl: 'https://opensea.io/assets/ethereum/0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4/1001',
+            attributes: [
+              { trait_type: 'Rarity', value: 'Epic' },
+              { trait_type: 'Language Count', value: 15 },
+              { trait_type: 'Model Size', value: '2.3B' },
+              { trait_type: 'Training Data', value: 'Curated' }
+            ]
+          }
+        },
+        {
+          id: '2',
+          name: 'Swahili Speech Dataset',
+          description: 'Comprehensive speech dataset with 10,000 hours of native Swahili speakers from Kenya, Tanzania, and Uganda.',
+          type: 'dataset',
+          author: 'Prof. Kesi Mwangi',
+          uploadedAt: '2024-01-10T08:15:00Z',
+          fileSize: '45.7 GB',
+          license: 'CC BY-SA 4.0',
+          tags: ['speech', 'swahili', 'audio', 'east-africa'],
+          downloads: { sdk: 892, ui: 1205, total: 2097 },
+          likes: 278,
+          views: 4321,
+          forks: 156,
+          stars: 189,
+          comments: 43,
+          nft: {
+            tokenId: '1002',
+            name: 'Swahili Speech Collection NFT',
+            description: 'Preserving and promoting Swahili language through AI',
+            image: '/swahili-dataset-nft.png',
+            contractAddress: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
+            currentValue: 0.623,
+            mintedAt: '2024-01-10T08:15:00Z',
+            lastSyncedAt: '2024-01-19T16:45:00Z',
+            openseaUrl: 'https://opensea.io/assets/ethereum/0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4/1002',
+            attributes: [
+              { trait_type: 'Rarity', value: 'Rare' },
+              { trait_type: 'Hours', value: 10000 },
+              { trait_type: 'Speakers', value: 'Native' },
+              { trait_type: 'Quality', value: 'Studio' }
+            ]
+          }
+        },
+        {
+          id: '3',
+          name: 'Yoruba Text Classification Model',
+          description: 'Fine-tuned BERT model for Yoruba text classification tasks including sentiment analysis and topic modeling.',
+          type: 'model',
+          author: 'Dr. Folake Adebayo',
+          uploadedAt: '2024-01-08T12:45:00Z',
+          fileSize: '1.8 GB',
+          license: 'MIT',
+          tags: ['bert', 'yoruba', 'classification', 'sentiment'],
+          downloads: { sdk: 567, ui: 423, total: 990 },
+          likes: 156,
+          views: 2890,
+          forks: 34,
+          stars: 98,
+          comments: 28,
+          nft: {
+            tokenId: '1003',
+            name: 'Yoruba AI Model NFT',
+            description: 'Advancing Yoruba language processing with modern AI',
+            image: '/yoruba-speech-nft.png',
+            contractAddress: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
+            currentValue: 0.412,
+            mintedAt: '2024-01-08T12:45:00Z',
+            lastSyncedAt: '2024-01-18T09:30:00Z',
+            openseaUrl: 'https://opensea.io/assets/ethereum/0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4/1003',
+            attributes: [
+              { trait_type: 'Rarity', value: 'Common' },
+              { trait_type: 'Base Model', value: 'BERT' },
+              { trait_type: 'Task', value: 'Classification' },
+              { trait_type: 'Accuracy', value: '94.2%' }
+            ]
+          }
         }
-      },
-      {
-        id: '2',
-        name: 'Swahili Speech Dataset',
-        description: 'Comprehensive speech dataset with 50,000 hours of Swahili audio from various dialects and regions.',
-        type: 'dataset',
-        author: 'Prof. Kesi Mwangi',
-        uploadedAt: '2024-01-10T08:15:00Z',
-        fileSize: '847 MB',
-        license: 'CC BY 4.0',
-        tags: ['speech', 'swahili', 'audio', 'dataset', 'asr'],
-        downloads: { sdk: 892, ui: 1205, total: 2097 },
-        likes: 278,
-        views: 4321,
-        forks: 45,
-        stars: 312,
-        comments: 89,
-        nft: {
-          tokenId: '1002',
-          name: 'Swahili Speech Dataset NFT',
-          description: 'NFT for the comprehensive Swahili speech dataset',
-          image: '/swahili-dataset-nft.png',
-          attributes: [
-            { trait_type: 'Type', value: 'Speech Dataset' },
-            { trait_type: 'Hours', value: 50000 },
-            { trait_type: 'Rarity', value: 'Rare' },
-            { trait_type: 'Quality', value: 'Premium' }
-          ],
-          contractAddress: '0x742d35Cc6634C0532925a3b8D4C9db96DfB3f681',
-          currentValue: 0.623,
-          mintedAt: '2024-01-10T08:20:00Z',
-          lastSyncedAt: '2024-01-19T16:45:00Z',
-          openseaUrl: 'https://opensea.io/assets/ethereum/0x742d35Cc6634C0532925a3b8D4C9db96DfB3f681/1002'
-        }
-      },
-      {
-        id: '3',
-        name: 'Yoruba Text Classification Model',
-        description: 'Fine-tuned BERT model for Yoruba text classification with 94% accuracy on news categorization.',
-        type: 'model',
-        author: 'Dr. Adebayo Olumide',
-        uploadedAt: '2024-01-08T14:45:00Z',
-        fileSize: '1.1 GB',
-        license: 'Apache 2.0',
-        tags: ['bert', 'yoruba', 'classification', 'nlp', 'news'],
-        downloads: { sdk: 567, ui: 423, total: 990 },
-        likes: 189,
-        views: 2876,
-        forks: 34,
-        stars: 201,
-        comments: 45,
-        nft: {
-          tokenId: '1003',
-          name: 'Yoruba Classification NFT',
-          description: 'NFT for the Yoruba text classification model',
-          image: '/yoruba-speech-nft.png',
-          attributes: [
-            { trait_type: 'Type', value: 'Classification Model' },
-            { trait_type: 'Accuracy', value: '94%' },
-            { trait_type: 'Rarity', value: 'Legendary' },
-            { trait_type: 'Language', value: 'Yoruba' }
-          ],
-          contractAddress: '0x742d35Cc6634C0532925a3b8D4C9db96DfB3f681',
-          currentValue: 1.234,
-          mintedAt: '2024-01-08T14:50:00Z',
-          lastSyncedAt: '2024-01-18T11:30:00Z',
-          openseaUrl: 'https://opensea.io/assets/ethereum/0x742d35Cc6634C0532925a3b8D4C9db96DfB3f681/1003'
-        }
-      }
-    ]
-  },
+      ]
+    } catch (error) {
+      console.warn('Error fetching user uploads:', error)
+      return []
+    }
+  }
 
   // Get portfolio stats
-  async getPortfolioStats(): Promise<PortfolioStats> {
-    const uploads = await this.getUserUploads()
-    
-    return {
-      totalUploads: uploads.length,
-      totalDownloads: uploads.reduce((sum, upload) => sum + upload.downloads.total, 0),
-      totalNFTValue: uploads.reduce((sum, upload) => sum + upload.nft.currentValue, 0),
-      totalEngagement: uploads.reduce((sum, upload) => 
-        sum + upload.likes + upload.views + upload.forks + upload.stars + upload.comments, 0
-      )
-    }
-  },
-
-  // Sync NFT engagement to smart contract (mock)
-  async syncNFTEngagement(upload: UserUpload): Promise<{ success: boolean; newValue: number; txHash?: string; error?: string }> {
+  static async getPortfolioStats(): Promise<PortfolioStats> {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const uploads = await this.getUserUploads()
       
-      // Calculate engagement score
-      const engagementScore = 
-        (upload.downloads.total * 10) +
-        (upload.forks * 20) +
-        (upload.stars * 8) +
-        (upload.likes * 5) +
-        (upload.comments * 3) +
-        (upload.views * 1)
+      return {
+        totalUploads: uploads.length,
+        totalDownloads: uploads.reduce((sum, upload) => sum + upload.downloads.total, 0),
+        totalNFTValue: uploads.reduce((sum, upload) => sum + upload.nft.currentValue, 0),
+        totalEngagement: uploads.reduce((sum, upload) => 
+          sum + upload.likes + upload.views + upload.forks + upload.stars + upload.comments, 0
+        )
+      }
+    } catch (error) {
+      console.warn('Error calculating portfolio stats:', error)
+      return {
+        totalUploads: 0,
+        totalDownloads: 0,
+        totalNFTValue: 0,
+        totalEngagement: 0
+      }
+    }
+  }
+
+  // Sync NFT engagement to smart contract
+  static async syncNFTEngagement(upload: UserUpload): Promise<SyncResult> {
+    try {
+      // Mock smart contract interaction
+      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate network delay
       
       // Calculate new NFT value based on engagement
+      const engagementScore = 
+        upload.downloads.total * 10 +
+        upload.likes * 5 +
+        upload.views * 1 +
+        upload.forks * 20 +
+        upload.stars * 8 +
+        upload.comments * 3
+      
+      // Convert engagement to ETH value (mock calculation)
       const baseValue = 0.1
       const engagementMultiplier = Math.log(engagementScore + 1) / 10
       const newValue = baseValue + engagementMultiplier
       
       // Mock transaction hash
-      const txHash = `0x${Math.random().toString(16).substring(2, 66)}`
+      const txHash = `0x${Math.random().toString(16).substr(2, 64)}`
       
       // Simulate 90% success rate
-      if (Math.random() > 0.1) {
+      const success = Math.random() > 0.1
+      
+      if (success) {
         return {
           success: true,
-          newValue: parseFloat(newValue.toFixed(3)),
-          txHash
+          newValue: Math.max(newValue, upload.nft.currentValue * 1.01), // Ensure some growth
+          transactionHash: txHash
         }
       } else {
         return {
           success: false,
           newValue: upload.nft.currentValue,
-          error: 'Smart contract interaction failed'
+          transactionHash: '',
+          error: 'Smart contract execution failed'
         }
       }
     } catch (error) {
       return {
         success: false,
         newValue: upload.nft.currentValue,
-        error: 'Network error occurred'
+        transactionHash: '',
+        error: 'Network error during sync'
       }
     }
   }
