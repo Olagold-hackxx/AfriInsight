@@ -120,13 +120,13 @@ export function NFTCard({ upload, onUpdate }: NFTCardProps) {
               {upload.nft.description}
             </p>
           </div>
-          <div className="ml-4 flex-shrink-0">
+          {/* <div className="ml-4 flex-shrink-0">
             <img 
               src={upload.nft.image || "/placeholder.svg?height=64&width=64"} 
               alt={upload.nft.name}
               className="w-16 h-16 rounded-lg object-cover border border-gray-700 group-hover:border-gray-600 transition-colors"
             />
-          </div>
+          </div> */}
         </div>
       </CardHeader>
       

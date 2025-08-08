@@ -71,8 +71,9 @@ export default function AdminPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
+        <div className="relative container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="flex items-center space-x-3">
               <RefreshCw className="h-6 w-6 animate-spin text-blue-400" />
@@ -85,8 +86,12 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 text-white">
+      {/* Background Pattern Overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      
+      <div className="relative container mx-auto px-4 py-8 max-w-7xl">
         {/* Header Section */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -100,7 +105,7 @@ export default function AdminPage() {
           <Button 
             onClick={handleRefresh} 
             variant="outline" 
-            className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-gray-600"
+            className="border-gray-700 text-gray-300 hover:bg-gray-800/50 hover:border-gray-600 backdrop-blur-sm"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh Data
@@ -110,7 +115,7 @@ export default function AdminPage() {
         {/* Statistics Overview */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+            <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-all duration-300 backdrop-blur-sm hover:bg-gray-900/70">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-300">Total Uploads</CardTitle>
                 <Upload className="h-4 w-4 text-blue-400" />
@@ -123,7 +128,7 @@ export default function AdminPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+            <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-all duration-300 backdrop-blur-sm hover:bg-gray-900/70">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-300">Total Downloads</CardTitle>
                 <Download className="h-4 w-4 text-green-400" />
@@ -136,7 +141,7 @@ export default function AdminPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+            <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-all duration-300 backdrop-blur-sm hover:bg-gray-900/70">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-300">NFT Portfolio Value</CardTitle>
                 <Coins className="h-4 w-4 text-yellow-400" />
@@ -149,7 +154,7 @@ export default function AdminPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+            <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-all duration-300 backdrop-blur-sm hover:bg-gray-900/70">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-300">Community Engagement</CardTitle>
                 <TrendingUp className="h-4 w-4 text-purple-400" />
@@ -165,7 +170,7 @@ export default function AdminPage() {
         )}
 
         {/* Top Performers Section */}
-        <Card className="mb-8 bg-gray-900 border-gray-800">
+        <Card className="mb-8 bg-gray-900/50 border-gray-800 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <Trophy className="h-5 w-5 text-yellow-400" />
@@ -175,7 +180,7 @@ export default function AdminPage() {
           <CardContent>
             <div className="space-y-4">
               {topUploads.map((upload, index) => (
-                <div key={upload.id} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+                <div key={upload.id} className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700 hover:bg-gray-800/70 transition-all duration-300">
                   <div className="flex items-center gap-4">
                     <Badge className={`
                       ${index === 0 ? 'bg-yellow-600 hover:bg-yellow-700' : 
@@ -209,24 +214,24 @@ export default function AdminPage() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="uploads" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-900 border border-gray-800">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-900/50 border border-gray-800 backdrop-blur-sm">
             <TabsTrigger 
               value="uploads" 
-              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300"
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 transition-all duration-300"
             >
               <Upload className="h-4 w-4 mr-2" />
               My Uploads
             </TabsTrigger>
             <TabsTrigger 
               value="nfts" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-300"
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-300 transition-all duration-300"
             >
               <Crown className="h-4 w-4 mr-2" />
               NFT Portfolio
             </TabsTrigger>
             <TabsTrigger 
               value="analytics" 
-              className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-gray-300"
+              className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-gray-300 transition-all duration-300"
             >
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics
@@ -237,7 +242,7 @@ export default function AdminPage() {
           <TabsContent value="uploads" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-white">Your AI Assets</h2>
-              <Badge variant="secondary" className="bg-gray-800 text-gray-300 border-gray-700">
+              <Badge variant="secondary" className="bg-gray-800/50 text-gray-300 border-gray-700 backdrop-blur-sm">
                 {uploads.length} items
               </Badge>
             </div>
@@ -257,7 +262,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-white">NFT Collection</h2>
               <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="bg-gray-800 text-gray-300 border-gray-700">
+                <Badge variant="secondary" className="bg-gray-800/50 text-gray-300 border-gray-700 backdrop-blur-sm">
                   {uploads.length} NFTs
                 </Badge>
                 <Badge className="bg-yellow-600 hover:bg-yellow-700 text-white">
@@ -282,7 +287,7 @@ export default function AdminPage() {
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Download Sources Analysis */}
-              <Card className="bg-gray-900 border-gray-800">
+              <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Download className="h-5 w-5 text-blue-400" />
@@ -297,7 +302,7 @@ export default function AdminPage() {
                           <span className="text-sm font-medium text-gray-300">{upload.name}</span>
                           <span className="text-sm text-gray-400">{upload.downloads.total} total</span>
                         </div>
-                        <div className="flex gap-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+                        <div className="flex gap-1 h-2 bg-gray-800/50 rounded-full overflow-hidden">
                           <div 
                             className="bg-blue-500 h-full transition-all duration-300"
                             style={{ 
@@ -315,7 +320,7 @@ export default function AdminPage() {
                           <span>SDK: {upload.downloads.sdk}</span>
                           <span>UI: {upload.downloads.ui}</span>
                         </div>
-                        <Separator className="bg-gray-800" />
+                        <Separator className="bg-gray-800/50" />
                       </div>
                     ))}
                   </div>
@@ -323,7 +328,7 @@ export default function AdminPage() {
               </Card>
 
               {/* Engagement Breakdown */}
-              <Card className="bg-gray-900 border-gray-800">
+              <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Activity className="h-5 w-5 text-purple-400" />
@@ -333,7 +338,7 @@ export default function AdminPage() {
                 <CardContent>
                   <div className="space-y-6">
                     {uploads.map((upload) => (
-                      <div key={upload.id} className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+                      <div key={upload.id} className="p-4 bg-gray-800/50 rounded-lg border border-gray-700 backdrop-blur-sm">
                         <h4 className="font-medium text-white mb-3">{upload.name}</h4>
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <div className="text-center">
