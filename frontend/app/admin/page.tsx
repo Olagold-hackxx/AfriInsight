@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Upload, Download, Coins, TrendingUp, RefreshCw, BarChart3, Zap, Crown, Trophy, Target } from 'lucide-react'
+import { Separator } from "@/components/ui/separator"
+import { Upload, Download, Coins, TrendingUp, RefreshCw, BarChart3, Crown, Trophy, Database, Brain, Activity, Users, Eye, Heart, GitFork, Star, MessageCircle } from 'lucide-react'
 import { DeHugAPI, UserUpload, PortfolioStats } from "@/lib/api"
 import { UploadCard } from "@/components/ui/upload-card"
 import { NFTCard } from "@/components/ui/nft-card"
@@ -73,8 +74,10 @@ export default function AdminPage() {
       <div className="min-h-screen bg-black text-white">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
-            <RefreshCw className="h-8 w-8 animate-spin text-orange-400" />
-            <span className="ml-2 text-lg">Loading dashboard...</span>
+            <div className="flex items-center space-x-3">
+              <RefreshCw className="h-6 w-6 animate-spin text-blue-400" />
+              <span className="text-lg text-gray-300">Loading your dashboard...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -83,112 +86,119 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header Section */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-white mb-2">
               Creator Dashboard
             </h1>
-            <p className="text-gray-400 mt-1">Manage your uploads, NFTs, and engagement</p>
+            <p className="text-gray-400">
+              Manage your AI models, datasets, and NFT portfolio
+            </p>
           </div>
-          <Button onClick={handleRefresh} variant="outline" className="border-gray-700 hover:border-orange-500/50 hover:bg-gray-900">
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-gray-600"
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            Refresh Data
           </Button>
         </div>
 
-        {/* Stats Overview */}
+        {/* Statistics Overview */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-gradient-to-br from-orange-900/20 to-red-900/20 border-orange-500/30 backdrop-blur-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-orange-200">Total Uploads</CardTitle>
+            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-gray-300">Total Uploads</CardTitle>
+                <Upload className="h-4 w-4 text-blue-400" />
               </CardHeader>
               <CardContent>
-                <div className="flex items-center">
-                  <Upload className="h-8 w-8 text-orange-400 mr-3" />
-                  <div>
-                    <p className="text-2xl font-bold text-white">{stats.totalUploads}</p>
-                    <p className="text-xs text-orange-300">Models & Datasets</p>
-                  </div>
-                </div>
+                <div className="text-2xl font-bold text-white">{stats.totalUploads}</div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Models & Datasets
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 border-green-500/30 backdrop-blur-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-green-200">Total Downloads</CardTitle>
+            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-gray-300">Total Downloads</CardTitle>
+                <Download className="h-4 w-4 text-green-400" />
               </CardHeader>
               <CardContent>
-                <div className="flex items-center">
-                  <Download className="h-8 w-8 text-green-400 mr-3" />
-                  <div>
-                    <p className="text-2xl font-bold text-white">{stats.totalDownloads.toLocaleString()}</p>
-                    <p className="text-xs text-green-300">All Time</p>
-                  </div>
-                </div>
+                <div className="text-2xl font-bold text-white">{stats.totalDownloads.toLocaleString()}</div>
+                <p className="text-xs text-gray-400 mt-1">
+                  All-time downloads
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-yellow-900/20 to-amber-900/20 border-yellow-500/30 backdrop-blur-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-yellow-200">NFT Portfolio</CardTitle>
+            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-gray-300">NFT Portfolio Value</CardTitle>
+                <Coins className="h-4 w-4 text-yellow-400" />
               </CardHeader>
               <CardContent>
-                <div className="flex items-center">
-                  <Coins className="h-8 w-8 text-yellow-400 mr-3" />
-                  <div>
-                    <p className="text-2xl font-bold text-white">{stats.totalNFTValue.toFixed(2)} ETH</p>
-                    <p className="text-xs text-yellow-300">Current Value</p>
-                  </div>
-                </div>
+                <div className="text-2xl font-bold text-white">{stats.totalNFTValue.toFixed(3)} ETH</div>
+                <p className="text-xs text-gray-400 mt-1">
+                  ≈ ${(stats.totalNFTValue * 2500).toLocaleString()} USD
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/30 backdrop-blur-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-purple-200">Engagement</CardTitle>
+            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-gray-300">Community Engagement</CardTitle>
+                <TrendingUp className="h-4 w-4 text-purple-400" />
               </CardHeader>
               <CardContent>
-                <div className="flex items-center">
-                  <TrendingUp className="h-8 w-8 text-purple-400 mr-3" />
-                  <div>
-                    <p className="text-2xl font-bold text-white">{stats.totalEngagement.toLocaleString()}</p>
-                    <p className="text-xs text-purple-300">Total Interactions</p>
-                  </div>
-                </div>
+                <div className="text-2xl font-bold text-white">{stats.totalEngagement.toLocaleString()}</div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Total interactions
+                </p>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {/* Top Performers */}
-        <Card className="mb-8 bg-gray-900/50 border-gray-800 backdrop-blur-sm">
+        {/* Top Performers Section */}
+        <Card className="mb-8 bg-gray-900 border-gray-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <Trophy className="h-5 w-5 text-yellow-400" />
-              Top Performers
+              Top Performing Assets
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {topUploads.map((upload, index) => (
-                <div key={upload.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700">
-                  <div className="flex items-center gap-3">
+                <div key={upload.id} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+                  <div className="flex items-center gap-4">
                     <Badge className={`
-                      ${index === 0 ? 'bg-yellow-600' : index === 1 ? 'bg-gray-400' : 'bg-orange-600'}
-                      text-white
+                      ${index === 0 ? 'bg-yellow-600 hover:bg-yellow-700' : 
+                        index === 1 ? 'bg-gray-500 hover:bg-gray-600' : 
+                        'bg-orange-600 hover:bg-orange-700'}
+                      text-white px-3 py-1
                     `}>
                       #{index + 1}
                     </Badge>
-                    <div>
-                      <p className="font-medium text-white">{upload.name}</p>
-                      <p className="text-sm text-gray-400">{upload.type}</p>
+                    <div className="flex items-center gap-3">
+                      {upload.type === 'model' ? (
+                        <Brain className="h-5 w-5 text-blue-400" />
+                      ) : (
+                        <Database className="h-5 w-5 text-green-400" />
+                      )}
+                      <div>
+                        <p className="font-medium text-white">{upload.name}</p>
+                        <p className="text-sm text-gray-400 capitalize">{upload.type}</p>
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-white">{upload.downloads.total}</p>
+                    <p className="font-bold text-white">{upload.downloads.total.toLocaleString()}</p>
                     <p className="text-xs text-gray-400">downloads</p>
                   </div>
                 </div>
@@ -199,24 +209,34 @@ export default function AdminPage() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="uploads" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-900/50 border-gray-800">
-            <TabsTrigger value="uploads" className="data-[state=active]:bg-orange-600 data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-900 border border-gray-800">
+            <TabsTrigger 
+              value="uploads" 
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300"
+            >
               <Upload className="h-4 w-4 mr-2" />
               My Uploads
             </TabsTrigger>
-            <TabsTrigger value="nfts" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <TabsTrigger 
+              value="nfts" 
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-300"
+            >
               <Crown className="h-4 w-4 mr-2" />
               NFT Portfolio
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+            <TabsTrigger 
+              value="analytics" 
+              className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-gray-300"
+            >
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics
             </TabsTrigger>
           </TabsList>
 
+          {/* Uploads Tab */}
           <TabsContent value="uploads" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-white">Your Uploads</h2>
+              <h2 className="text-xl font-semibold text-white">Your AI Assets</h2>
               <Badge variant="secondary" className="bg-gray-800 text-gray-300 border-gray-700">
                 {uploads.length} items
               </Badge>
@@ -232,15 +252,16 @@ export default function AdminPage() {
             </div>
           </TabsContent>
 
+          {/* NFTs Tab */}
           <TabsContent value="nfts" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-white">NFT Collection</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Badge variant="secondary" className="bg-gray-800 text-gray-300 border-gray-700">
                   {uploads.length} NFTs
                 </Badge>
-                <Badge className="bg-yellow-600 text-white">
-                  {stats?.totalNFTValue.toFixed(2)} ETH
+                <Badge className="bg-yellow-600 hover:bg-yellow-700 text-white">
+                  {stats?.totalNFTValue.toFixed(3)} ETH
                 </Badge>
               </div>
             </div>
@@ -255,32 +276,36 @@ export default function AdminPage() {
             </div>
           </TabsContent>
 
+          {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <h2 className="text-xl font-semibold text-white">Detailed Analytics</h2>
+            <h2 className="text-xl font-semibold text-white mb-6">Detailed Analytics</h2>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Download Sources */}
-              <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
+              {/* Download Sources Analysis */}
+              <Card className="bg-gray-900 border-gray-800">
                 <CardHeader>
-                  <CardTitle className="text-white">Download Sources</CardTitle>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Download className="h-5 w-5 text-blue-400" />
+                    Download Sources
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {uploads.map((upload) => (
-                      <div key={upload.id} className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-300">{upload.name}</span>
-                          <span className="text-gray-400">{upload.downloads.total}</span>
+                      <div key={upload.id} className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-gray-300">{upload.name}</span>
+                          <span className="text-sm text-gray-400">{upload.downloads.total} total</span>
                         </div>
-                        <div className="flex gap-1 h-2">
+                        <div className="flex gap-1 h-2 bg-gray-800 rounded-full overflow-hidden">
                           <div 
-                            className="bg-orange-500 rounded-l"
+                            className="bg-blue-500 h-full transition-all duration-300"
                             style={{ 
                               width: `${(upload.downloads.sdk / upload.downloads.total) * 100}%` 
                             }}
                           />
                           <div 
-                            className="bg-green-500 rounded-r"
+                            className="bg-green-500 h-full transition-all duration-300"
                             style={{ 
                               width: `${(upload.downloads.ui / upload.downloads.total) * 100}%` 
                             }}
@@ -290,6 +315,7 @@ export default function AdminPage() {
                           <span>SDK: {upload.downloads.sdk}</span>
                           <span>UI: {upload.downloads.ui}</span>
                         </div>
+                        <Separator className="bg-gray-800" />
                       </div>
                     ))}
                   </div>
@@ -297,27 +323,39 @@ export default function AdminPage() {
               </Card>
 
               {/* Engagement Breakdown */}
-              <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
+              <Card className="bg-gray-900 border-gray-800">
                 <CardHeader>
-                  <CardTitle className="text-white">Engagement Overview</CardTitle>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-purple-400" />
+                    Engagement Overview
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {uploads.map((upload) => (
-                      <div key={upload.id} className="p-3 bg-gray-800/50 rounded border border-gray-700">
-                        <h4 className="font-medium text-white mb-2">{upload.name}</h4>
-                        <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div key={upload.id} className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+                        <h4 className="font-medium text-white mb-3">{upload.name}</h4>
+                        <div className="grid grid-cols-3 gap-4 text-sm">
                           <div className="text-center">
-                            <p className="text-red-400 font-bold">{upload.likes}</p>
-                            <p className="text-gray-400">Likes</p>
+                            <div className="flex items-center justify-center gap-1 mb-1">
+                              <Heart className="h-3 w-3 text-red-400" />
+                              <span className="text-red-400 font-bold">{upload.likes}</span>
+                            </div>
+                            <p className="text-gray-400 text-xs">Likes</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-blue-400 font-bold">{upload.views}</p>
-                            <p className="text-gray-400">Views</p>
+                            <div className="flex items-center justify-center gap-1 mb-1">
+                              <Eye className="h-3 w-3 text-blue-400" />
+                              <span className="text-blue-400 font-bold">{upload.views}</span>
+                            </div>
+                            <p className="text-gray-400 text-xs">Views</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-green-400 font-bold">{upload.forks}</p>
-                            <p className="text-gray-400">Forks</p>
+                            <div className="flex items-center justify-center gap-1 mb-1">
+                              <GitFork className="h-3 w-3 text-green-400" />
+                              <span className="text-green-400 font-bold">{upload.forks}</span>
+                            </div>
+                            <p className="text-gray-400 text-xs">Forks</p>
                           </div>
                         </div>
                       </div>

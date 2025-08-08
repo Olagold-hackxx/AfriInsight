@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
-import { ExternalLink, Coins, Calendar, Hash, Zap, TrendingUp, Download, Heart, Eye, GitFork, Star, MessageCircle, Loader2, CheckCircle, XCircle } from 'lucide-react'
+import { ExternalLink, Coins, Calendar, Hash, Zap, TrendingUp, Download, Heart, Eye, GitFork, Star, MessageCircle, Loader2, CheckCircle, XCircle, Activity } from 'lucide-react'
 import { UserUpload, DeHugAPI } from "@/lib/api"
 import { toast } from 'react-toastify'
 
@@ -90,7 +90,7 @@ export function NFTCard({ upload, onUpdate }: NFTCardProps) {
     switch (rarity.toLowerCase()) {
       case 'legendary': return 'bg-gradient-to-r from-yellow-600 to-orange-600'
       case 'epic': return 'bg-gradient-to-r from-purple-600 to-pink-600'
-      case 'rare': return 'bg-gradient-to-r from-orange-600 to-red-600'
+      case 'rare': return 'bg-gradient-to-r from-blue-600 to-cyan-600'
       default: return 'bg-gradient-to-r from-gray-600 to-gray-700'
     }
   }
@@ -99,28 +99,32 @@ export function NFTCard({ upload, onUpdate }: NFTCardProps) {
   const rarity = rarityAttribute?.value as string || 'Common'
 
   // Calculate engagement score for progress bar
-  const maxEngagement = 10000 // Arbitrary max for progress calculation
+  const maxEngagement = 10000
   const currentEngagement = upload.downloads.total + upload.likes + upload.views + upload.forks + upload.stars + upload.comments
   const engagementProgress = Math.min((currentEngagement / maxEngagement) * 100, 100)
 
   return (
-    <Card className="bg-gray-900/50 border-gray-800 hover:border-orange-500/50 transition-all duration-300 backdrop-blur-sm">
-      <CardHeader className="pb-3">
+    <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-all duration-300 group">
+      <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <CardTitle className="text-lg text-white">{upload.nft.name}</CardTitle>
-              <Badge className={`${getRarityColor(rarity)} text-white border-0`}>
+              <CardTitle className="text-lg text-white group-hover:text-gray-100 transition-colors">
+                {upload.nft.name}
+              </CardTitle>
+              <Badge className={`${getRarityColor(rarity)} text-white border-0 text-xs px-2 py-1`}>
                 {rarity}
               </Badge>
             </div>
-            <p className="text-sm text-gray-400 line-clamp-2">{upload.nft.description}</p>
+            <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
+              {upload.nft.description}
+            </p>
           </div>
           <div className="ml-4 flex-shrink-0">
             <img 
-              src={upload.nft.image || "/placeholder.svg"} 
+              src={upload.nft.image || "/placeholder.svg?height=64&width=64"} 
               alt={upload.nft.name}
-              className="w-16 h-16 rounded-lg object-cover border border-orange-500/30"
+              className="w-16 h-16 rounded-lg object-cover border border-gray-700 group-hover:border-gray-600 transition-colors"
             />
           </div>
         </div>
@@ -130,7 +134,7 @@ export function NFTCard({ upload, onUpdate }: NFTCardProps) {
         {/* NFT Details */}
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
-            <Hash className="h-4 w-4 text-orange-400" />
+            <Hash className="h-4 w-4 text-gray-500" />
             <span className="text-gray-300">#{upload.nft.tokenId}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -138,22 +142,22 @@ export function NFTCard({ upload, onUpdate }: NFTCardProps) {
             <span className="text-yellow-400 font-semibold">{upload.nft.currentValue.toFixed(3)} ETH</span>
           </div>
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-orange-400" />
+            <Calendar className="h-4 w-4 text-gray-500" />
             <span className="text-gray-300">{formatDate(upload.nft.mintedAt)}</span>
           </div>
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-green-400" />
+            <Activity className="h-4 w-4 text-green-400" />
             <span className="text-green-400">Active</span>
           </div>
         </div>
 
         {/* Attributes */}
         <div>
-          <h4 className="text-sm font-semibold text-gray-200 mb-2">Attributes</h4>
+          <h4 className="text-sm font-medium text-gray-200 mb-3">NFT Attributes</h4>
           <div className="grid grid-cols-2 gap-2">
             {upload.nft.attributes.map((attr, index) => (
-              <div key={index} className="bg-gray-800/50 p-2 rounded text-xs border border-gray-700">
-                <p className="text-orange-400">{attr.trait_type}</p>
+              <div key={index} className="bg-gray-800 p-2 rounded border border-gray-700 text-xs">
+                <p className="text-gray-400 mb-1">{attr.trait_type}</p>
                 <p className="text-white font-medium">{attr.value}</p>
               </div>
             ))}
@@ -162,36 +166,36 @@ export function NFTCard({ upload, onUpdate }: NFTCardProps) {
 
         <Separator className="bg-gray-800" />
 
-        {/* Engagement Metrics */}
+        {/* Engagement Impact */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold text-gray-200">Engagement Impact</h4>
-            <span className="text-xs text-orange-400">{engagementProgress.toFixed(1)}%</span>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-medium text-gray-200">Engagement Impact</h4>
+            <span className="text-xs text-gray-400">{engagementProgress.toFixed(1)}%</span>
           </div>
-          <Progress value={engagementProgress} className="mb-3 bg-gray-800" />
+          <Progress value={engagementProgress} className="mb-3" />
           
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="flex items-center gap-1">
+          <div className="grid grid-cols-3 gap-3 text-xs">
+            <div className="flex items-center gap-2">
               <Download className="h-3 w-3 text-blue-400" />
               <span className="text-gray-300">{upload.downloads.total}</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Heart className="h-3 w-3 text-red-400" />
               <span className="text-gray-300">{upload.likes}</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Eye className="h-3 w-3 text-green-400" />
               <span className="text-gray-300">{upload.views}</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <GitFork className="h-3 w-3 text-yellow-400" />
               <span className="text-gray-300">{upload.forks}</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Star className="h-3 w-3 text-purple-400" />
               <span className="text-gray-300">{upload.stars}</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <MessageCircle className="h-3 w-3 text-cyan-400" />
               <span className="text-gray-300">{upload.comments}</span>
             </div>
@@ -200,20 +204,20 @@ export function NFTCard({ upload, onUpdate }: NFTCardProps) {
 
         <Separator className="bg-gray-800" />
 
-        {/* Sync Status */}
+        {/* Smart Contract Status */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold text-gray-200">Smart Contract</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-medium text-gray-200">Smart Contract</h4>
             <span className="text-xs text-gray-400">
               Last sync: {formatDate(upload.nft.lastSyncedAt)}
             </span>
           </div>
           
           {lastSyncResult && (
-            <div className={`p-2 rounded text-xs mb-2 ${
+            <div className={`p-3 rounded-lg text-xs mb-3 border ${
               lastSyncResult.success 
-                ? 'bg-green-900/30 border border-green-500/30 text-green-300' 
-                : 'bg-red-900/30 border border-red-500/30 text-red-300'
+                ? 'bg-green-900/20 border-green-500/30 text-green-300' 
+                : 'bg-red-900/20 border-red-500/30 text-red-300'
             }`}>
               <div className="flex items-center gap-2">
                 {lastSyncResult.success ? (
@@ -234,42 +238,42 @@ export function NFTCard({ upload, onUpdate }: NFTCardProps) {
           <Button 
             onClick={handleSyncEngagement}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-3"
           >
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Syncing...
+                Syncing to Blockchain...
               </>
             ) : (
               <>
                 <Zap className="h-4 w-4 mr-2" />
-                Sync Engagement
+                Sync Engagement to NFT
               </>
             )}
           </Button>
-        </div>
 
-        {/* External Links */}
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-orange-500/50"
-            onClick={() => window.open(upload.nft.openseaUrl, '_blank')}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            OpenSea
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-orange-500/50"
-            onClick={() => window.open(`https://etherscan.io/address/${upload.nft.contractAddress}`, '_blank')}
-          >
-            <Hash className="h-4 w-4 mr-2" />
-            Contract
-          </Button>
+          {/* External Links */}
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
+              onClick={() => window.open(upload.nft.openseaUrl, '_blank')}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              OpenSea
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
+              onClick={() => window.open(`https://etherscan.io/address/${upload.nft.contractAddress}`, '_blank')}
+            >
+              <Hash className="h-4 w-4 mr-2" />
+              Contract
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

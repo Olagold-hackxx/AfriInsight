@@ -15,7 +15,7 @@ export function StatsDashboard() {
   const fetchStats = async () => {
     try {
       setLoading(true)
-      const allStats = await DeHugAPI.getStats()
+      const allStats = await DeHugAPI.getDownloadStats()
       setStats(allStats)
       setLastUpdated(new Date())
     } catch (error) {
