@@ -3,6 +3,7 @@ from app.routes import router
 from app.models import Base
 from app.db import engine
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
 app = FastAPI(title="Download Tracker")
 
@@ -23,16 +24,4 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True,
-        reload_dirs=[os.path.dirname(os.path.abspath(__file__))],
-        reload_excludes=[
-            "*/.git/*",
-            "*/__pycache__/*",
-            "*.pyc",
-            "*/.pytest_cache/*",
-            "*/.vscode/*",
-            "*/.idea/*"
-        ],
-        reload_delay=1,
-        reload_includes=["*.py", "*.html", "*.css", "*.js"]
     )
