@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from .routes import router
-from .models import Base
-from .db import engine
+from app.routes import router
+from app.models import Base
+from app.db import engine
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Download Tracker")
