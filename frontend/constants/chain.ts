@@ -12,7 +12,7 @@ export const filecoinCalibrationTestnet = defineChain({
   rpc: "https://api.calibration.node.glif.io/rpc/v1",
   blockExplorers: [
     {
-      name: "Filecoin Blockchain Explorer",
+      name: "Filscan Filecoin Explorer",
       url: "https://calibration.filscan.io",
     },
   ],
