@@ -1,17 +1,4 @@
-const nextConfig = {
-  eslint: {
-    dirs: ['pages', 'utils', 'components', 'app'],
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  images: {
-    unoptimized: true,
-  },
-  experimental: {
-    appDir: true,
-  },
-}
+/** @type {import('next').NextConfig} */
+const nextConfig = {};
 
-export default nextConfig
+export default nextConfig;

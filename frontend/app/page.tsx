@@ -4,14 +4,16 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Brain, Globe, Users, BarChart3, Upload, Search, Cpu, Sparkles, Zap, TrendingUp, Play, ChevronDown, Database, Code, FileText } from 'lucide-react'
+import { ArrowRight, Brain, Globe, Users, BarChart3, Upload, Search, Cpu, Shield, Zap, TrendingUp, Play, ChevronDown, Database, Code, FileText, CheckCircle, Coins, Trophy, Download } from 'lucide-react'
 import Link from "next/link"
 
 export default function HomePage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isVisible, setIsVisible] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     setIsVisible(true)
     
     const handleMouseMove = (e: MouseEvent) => {
@@ -24,105 +26,68 @@ export default function HomePage() {
 
   const features = [
     {
-      icon: Upload,
-      title: "Decentralized Storage",
-      description: "Upload ML models and datasets to IPFS/Filecoin for permanent, censorship-resistant access",
-      color: "from-green-400 to-emerald-600",
-      delay: "0ms"
-    },
-    {
-      icon: Search,
-      title: "Model Discovery",
-      description: "Discover models by task, domain, or performance metrics with advanced filtering",
-      color: "from-blue-400 to-cyan-600",
-      delay: "100ms"
-    },
-    {
-      icon: Cpu,
-      title: "Decentralized Inference",
-      description: "Run models in-browser or via decentralized compute networks like Bacalhau",
-      color: "from-purple-400 to-violet-600",
-      delay: "200ms"
+      icon: Database,
+      title: "Decentralized Repository",
+      description: "Host models and datasets on IPFS with permanent, censorship-resistant access. No single point of failure.",
+      gradient: "from-slate-600 to-slate-800"
     },
     {
       icon: Code,
-      title: "Model Cards",
-      description: "Immutable metadata, licensing info, and usage examples for every model",
-      color: "from-orange-400 to-red-500",
-      delay: "300ms"
+      title: "Developer SDK",
+      description: "Access models and datasets programmatically with our Python SDK. Compatible with transformers library.",
+      gradient: "from-gray-600 to-gray-800"
     },
     {
-      icon: Users,
-      title: "Community Driven",
-      description: "Reward contributors and curate high-quality models through community governance",
-      color: "from-pink-400 to-rose-600",
-      delay: "400ms"
+      icon: Coins,
+      title: "NFT Rewards",
+      description: "Earn NFTs for contributions. Value increases with downloads and community engagement.",
+      gradient: "from-zinc-600 to-zinc-800"
+    },
+    {
+      icon: Shield,
+      title: "Immutable Metadata",
+      description: "Model cards, licenses, and provenance stored permanently on blockchain for transparency.",
+      gradient: "from-stone-600 to-stone-800"
     }
   ]
 
   const stats = [
-    { value: "2.5K+", label: "Models", icon: Brain },
-    { value: "15K+", label: "Datasets", icon: Database },
-    { value: "850+", label: "Contributors", icon: Users },
+    { value: "12.5K", label: "Models", icon: Brain },
+    { value: "8.2K", label: "Datasets", icon: Database },
+    { value: "3.4K", label: "Contributors", icon: Users },
+    { value: "156M", label: "Downloads", icon: Download },
   ]
 
-  const modelTypes = [
-    {
-      title: "Natural Language Processing",
-      description: "Text classification, generation, translation, and language understanding models",
-      icon: "🔤",
-      gradient: "from-blue-500/20 to-cyan-500/20",
-      tags: ["BERT", "GPT", "T5", "Translation"]
-    },
-    {
-      title: "Computer Vision",
-      description: "Image classification, object detection, segmentation, and generative models",
-      icon: "👁️",
-      gradient: "from-purple-500/20 to-violet-500/20",
-      tags: ["ResNet", "YOLO", "Stable Diffusion", "ViT"]
-    },
-    {
-      title: "Audio & Speech",
-      description: "Speech recognition, text-to-speech, music generation, and audio analysis",
-      icon: "🎵",
-      gradient: "from-green-500/20 to-emerald-500/20",
-      tags: ["Whisper", "WaveNet", "Tacotron", "AudioCraft"]
-    },
-    {
-      title: "Multimodal",
-      description: "Models that work across text, images, audio, and other modalities",
-      icon: "🌐",
-      gradient: "from-orange-500/20 to-red-500/20",
-      tags: ["CLIP", "DALL-E", "GPT-4V", "Flamingo"]
-    }
-  ]
+  const codeExample = `from dehug import DeHugRepository
+
+# Load model from decentralized storage
+model = DeHugRepository.load_model("microsoft/DialoGPT-medium")
+
+# Load dataset
+dataset = DeHugRepository.load_dataset("squad", split="train")
+
+# Upload your model and mint NFT
+nft_id = DeHugRepository.upload_model(
+    model_path="./my-model",
+    model_card="model_card.md",
+    license="apache-2.0"
+)`
+
+  if (!mounted) {
+    return null
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
-      {/* Animated Background */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white overflow-hidden">
+      {/* Subtle Background Effects */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-green-900/20" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
         <div 
-          className="absolute inset-0 opacity-30"
+          className="absolute inset-0 opacity-20 transition-opacity duration-700"
           style={{
-            background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59, 130, 246, 0.15), transparent 40%)`
+            background: `radial-gradient(400px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(148, 163, 184, 0.1), transparent 40%)`
           }}
         />
-        {/* Floating particles */}
-        <div className="absolute inset-0">
-          {[...Array(50)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-blue-400/30 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 3}s`
-              }}
-            />
-          ))}
-        </div>
       </div>
 
       {/* Hero Section */}
@@ -135,56 +100,54 @@ export default function HomePage() {
               }`}
             >
               <Badge 
-                variant="secondary" 
-                className="mb-6 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30 text-blue-300 px-4 py-2 text-sm font-medium backdrop-blur-sm"
+                variant="outline" 
+                className="mb-8 border-slate-600 text-slate-300 px-6 py-2 text-sm font-medium backdrop-blur-sm bg-slate-900/50"
               >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Powered by IPFS & Filecoin
+                The Decentralized Hugging Face
               </Badge>
               
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8">
-                <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+              <h1 className="text-6xl md:text-8xl font-light tracking-tight mb-8 leading-none">
+                <span className="text-white font-extralight">
                   DeHug
                 </span>
                 <br />
-                <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-600 bg-clip-text text-transparent animate-pulse">
-                  Decentralized ML
+                <span className="text-slate-400 font-thin text-4xl md:text-5xl">
+                  Decentralized ML Hub
                 </span>
               </h1>
               
-              <p className="mt-6 text-xl leading-8 text-gray-300 max-w-4xl mx-auto">
-                The decentralized alternative to Hugging Face. Host, share, and access{" "}
-                <span className="text-blue-400 font-semibold">machine learning models</span> and{" "}
-                <span className="text-purple-400 font-semibold">datasets</span> on a{" "}
-                <span className="text-green-400 font-semibold">censorship-resistant</span> platform 
-                built on IPFS and Filecoin.
+              <p className="mt-8 text-xl leading-8 text-slate-300 max-w-4xl mx-auto font-light">
+                Host, discover, and monetize machine learning models and datasets on a decentralized platform. 
+                Earn NFT rewards for your contributions to the AI community.
               </p>
               
-              <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
-                <Link href="/upload">
+              <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link href="/models">
                   <Button 
                     size="lg" 
-                    className="group bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="group bg-white text-black hover:bg-slate-100 px-10 py-4 text-lg font-medium rounded-none transition-all duration-300 transform hover:scale-105"
                   >
-                    Upload Your Model
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    Explore Models
+                    <Search className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
                 
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="group border-gray-600 text-gray-300 hover:bg-white/10 px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 backdrop-blur-sm"
-                >
-                  <Play className="mr-2 h-5 w-5" />
-                  Watch Demo
-                </Button>
+                <Link href="/upload">
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="group border-slate-600 text-slate-300 hover:bg-slate-800/50 px-10 py-4 text-lg font-medium rounded-none transition-all duration-300 backdrop-blur-sm"
+                  >
+                    <Upload className="mr-3 h-5 w-5" />
+                    Upload & Earn NFT
+                  </Button>
+                </Link>
               </div>
             </div>
 
             {/* Stats */}
             <div 
-              className={`mt-20 transition-all duration-1000 delay-300 ${
+              className={`mt-32 transition-all duration-1000 delay-300 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
             >
@@ -193,14 +156,15 @@ export default function HomePage() {
                   <div 
                     key={stat.label}
                     className="group cursor-pointer"
-                    style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <div className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-blue-500/30 transition-all duration-300 hover:scale-105">
-                      <stat.icon className="h-8 w-8 text-blue-400 mx-auto mb-3" />
-                      <div className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                    <div className="bg-slate-900/30 backdrop-blur-sm border border-slate-800 p-8 transition-all duration-500 hover:border-slate-600 hover:bg-slate-800/30">
+                      <stat.icon className="h-8 w-8 text-slate-400 mx-auto mb-4" />
+                      <div className="text-4xl font-light text-white mb-2">
                         {stat.value}
                       </div>
-                      <div className="text-gray-400 text-sm mt-1">{stat.label}</div>
+                      <div className="text-slate-400 text-sm font-medium tracking-wide uppercase">
+                        {stat.label}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -213,192 +177,139 @@ export default function HomePage() {
       {/* Features Section */}
       <section className="relative z-10 py-32 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Democratizing
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                Machine Learning
-              </span>
+          <div className="text-center mb-24">
+            <h2 className="text-5xl md:text-6xl font-light mb-8 text-white">
+              Why Choose
+              <span className="block text-slate-400 font-thin">DeHug?</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Build the future of AI with decentralized infrastructure that puts control back in the hands of the community
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
+              The first decentralized ML platform with built-in monetization through NFT rewards
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {features.map((feature, index) => (
               <div
                 key={feature.title}
                 className="group cursor-pointer"
-                style={{ 
-                  animation: `fadeInUp 0.6s ease-out ${feature.delay} both`
-                }}
+                style={{ animationDelay: `${index * 150}ms` }}
               >
-                <Card className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border-white/10 hover:border-white/20 transition-all duration-500 hover:scale-105 h-full">
-                  <CardContent className="p-8">
-                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                <div className="bg-slate-900/20 backdrop-blur-sm border border-slate-800 p-10 h-full transition-all duration-700 hover:border-slate-600 hover:bg-slate-800/20">
+                  <div className="flex items-start space-x-6">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} flex items-center justify-center group-hover:scale-110 transition-transform duration-500`}>
                       <feature.icon className="h-8 w-8 text-white" />
                     </div>
                     
-                    <h3 className="text-xl font-bold text-white mb-4 group-hover:text-blue-300 transition-colors">
-                      {feature.title}
-                    </h3>
-                    
-                    <p className="text-gray-400 leading-relaxed">
-                      {feature.description}
-                    </p>
-                    
-                    <div className="mt-6 flex items-center text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span className="text-sm font-medium">Learn more</span>
-                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-light text-white mb-4 group-hover:text-slate-200 transition-colors">
+                        {feature.title}
+                      </h3>
+                      
+                      <p className="text-slate-400 leading-relaxed font-light">
+                        {feature.description}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Model Types Section */}
+      {/* Code Example Section */}
       <section className="relative z-10 py-32 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Every Type of
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-                AI Model
-              </span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-5xl font-light text-white mb-8">
+                Developer
+                <span className="block text-slate-400 font-thin">Experience</span>
+              </h2>
+              <p className="text-xl text-slate-300 mb-12 font-light leading-relaxed">
+                Familiar API compatible with Hugging Face transformers. 
+                Access decentralized models with the same simplicity.
+              </p>
+              
+              <div className="space-y-6">
+                <div className="flex items-center text-slate-300">
+                  <CheckCircle className="h-6 w-6 mr-4 text-slate-400" />
+                  <span className="font-light">Compatible with transformers library</span>
+                </div>
+                <div className="flex items-center text-slate-300">
+                  <CheckCircle className="h-6 w-6 mr-4 text-slate-400" />
+                  <span className="font-light">Automatic IPFS resolution</span>
+                </div>
+                <div className="flex items-center text-slate-300">
+                  <CheckCircle className="h-6 w-6 mr-4 text-slate-400" />
+                  <span className="font-light">Built-in caching and optimization</span>
+                </div>
+                <div className="flex items-center text-slate-300">
+                  <CheckCircle className="h-6 w-6 mr-4 text-slate-400" />
+                  <span className="font-light">NFT minting on upload</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="relative">
+              <div className="bg-slate-950/50 border border-slate-800 p-6 backdrop-blur-sm">
+                <div className="flex items-center mb-4">
+                  <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                  <span className="text-slate-400 text-sm ml-4">dehug_example.py</span>
+                </div>
+                <pre className="text-slate-300 text-sm leading-relaxed font-mono">
+                  <code>{codeExample}</code>
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* NFT Rewards Section */}
+      <section className="relative z-10 py-32 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-24">
+            <h2 className="text-5xl md:text-6xl font-light mb-8 text-white">
+              Earn While You
+              <span className="block text-slate-400 font-thin">Contribute</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              From language models to computer vision, host and discover cutting-edge AI models across all domains
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto font-light">
+              Get rewarded with NFTs that appreciate in value based on community engagement
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {modelTypes.map((modelType, index) => (
-              <div
-                key={modelType.title}
-                className="group cursor-pointer"
-                style={{ 
-                  animation: `fadeInUp 0.6s ease-out ${index * 100}ms both`
-                }}
-              >
-                <div className={`bg-gradient-to-br ${modelType.gradient} backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:border-white/20 transition-all duration-500 hover:scale-105`}>
-                  <div className="flex items-center mb-6">
-                    <div className="text-4xl mr-4">{modelType.icon}</div>
-                    <h3 className="text-2xl font-bold text-white">{modelType.title}</h3>
-                  </div>
-                  
-                  <p className="text-gray-300 mb-6 leading-relaxed">
-                    {modelType.description}
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {modelType.tags.map(tag => (
-                      <Badge 
-                        key={tag} 
-                        variant="secondary" 
-                        className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="bg-slate-900/20 backdrop-blur-sm border border-slate-800 p-8 text-center transition-all duration-700 hover:border-slate-600">
+              <div className="w-16 h-16 bg-gradient-to-br from-amber-600 to-orange-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Upload className="h-8 w-8 text-white" />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <h3 className="text-xl font-light text-white mb-4">Upload Content</h3>
+              <p className="text-slate-400 font-light leading-relaxed">
+                Upload models or datasets and automatically receive a unique NFT representing your contribution.
+              </p>
+            </div>
 
-      {/* Decentralization Benefits */}
-      <section className="relative z-10 py-32 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Why
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                Decentralized?
-              </span>
-            </h2>
-          </div>
-
-          <div className="relative">
-            <div className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm rounded-3xl border border-white/10 p-8 md:p-12">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h3 className="text-3xl font-bold text-white mb-6">
-                    Own Your AI Models
-                  </h3>
-                  <p className="text-gray-300 mb-8 text-lg">
-                    No single point of failure, no corporate gatekeepers. Your models 
-                    and datasets are stored permanently on IPFS/Filecoin, accessible 
-                    to anyone, anywhere, anytime.
-                  </p>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center text-green-400">
-                      <Zap className="h-5 w-5 mr-3" />
-                      <span>Censorship resistant</span>
-                    </div>
-                    <div className="flex items-center text-blue-400">
-                      <Globe className="h-5 w-5 mr-3" />
-                      <span>Globally accessible</span>
-                    </div>
-                    <div className="flex items-center text-purple-400">
-                      <Users className="h-5 w-5 mr-3" />
-                      <span>Community governed</span>
-                    </div>
-                    <div className="flex items-center text-orange-400">
-                      <TrendingUp className="h-5 w-5 mr-3" />
-                      <span>Contributor rewards</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="relative">
-                  <div className="bg-black/30 rounded-2xl border border-white/20 p-6">
-                    <div className="flex items-center mb-4">
-                      <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-3 bg-green-500/20 rounded-lg">
-                        <span className="text-green-300 text-sm">✓ Model uploaded to IPFS</span>
-                        <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
-                          Permanent
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 bg-blue-500/20 rounded-lg">
-                        <span className="text-blue-300 text-sm">✓ Metadata stored on-chain</span>
-                        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
-                          Immutable
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 bg-purple-500/20 rounded-lg">
-                        <span className="text-purple-300 text-sm">✓ Globally accessible</span>
-                        <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
-                          24/7
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div className="bg-slate-900/20 backdrop-blur-sm border border-slate-800 p-8 text-center transition-all duration-700 hover:border-slate-600">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                <TrendingUp className="h-8 w-8 text-white" />
               </div>
+              <h3 className="text-xl font-light text-white mb-4">Gain Popularity</h3>
+              <p className="text-slate-400 font-light leading-relaxed">
+                As your models get downloaded and used, your NFT value increases automatically.
+              </p>
+            </div>
+
+            <div className="bg-slate-900/20 backdrop-blur-sm border border-slate-800 p-8 text-center transition-all duration-700 hover:border-slate-600">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Trophy className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-light text-white mb-4">Earn Rewards</h3>
+              <p className="text-slate-400 font-light leading-relaxed">
+                Trade your NFTs or earn ongoing royalties from your popular contributions.
+              </p>
             </div>
           </div>
         </div>
@@ -407,30 +318,24 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="relative z-10 py-32 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <div className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm rounded-3xl border border-white/10 p-12 md:p-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Ready to
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                Decentralize AI?
-              </span>
+          <div className="bg-slate-900/20 backdrop-blur-sm border border-slate-800 p-16 md:p-24">
+            <h2 className="text-5xl md:text-6xl font-light mb-8 text-white">
+              Start Building
             </h2>
             
-            <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-              Join the movement to democratize machine learning. Upload your first model 
-              or explore the growing collection of community-contributed AI models.
+            <p className="text-xl text-slate-300 mb-16 max-w-2xl mx-auto font-light leading-relaxed">
+              Join thousands of developers building the future of decentralized AI. 
+              Upload your first model and start earning.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link href="/upload">
                 <Button 
                   size="lg" 
-                  className="group bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="bg-white text-black hover:bg-slate-100 px-10 py-4 text-lg font-medium rounded-none transition-all duration-300 transform hover:scale-105"
                 >
-                  Upload Your Model
-                  <Upload className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  Upload Model
+                  <Upload className="ml-3 h-5 w-5" />
                 </Button>
               </Link>
               
@@ -438,36 +343,16 @@ export default function HomePage() {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  className="group border-gray-600 text-gray-300 hover:bg-white/10 px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 backdrop-blur-sm"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800/50 px-10 py-4 text-lg font-medium rounded-none transition-all duration-300 backdrop-blur-sm"
                 >
-                  Explore Models
-                  <Search className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  Browse Models
+                  <Search className="ml-3 h-5 w-5" />
                 </Button>
               </Link>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Scroll Indicator */}
-      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-        <div className="animate-bounce">
-          <ChevronDown className="h-6 w-6 text-white/50" />
-        </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   )
 }

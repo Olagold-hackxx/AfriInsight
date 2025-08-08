@@ -12,8 +12,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, Brain, Upload, Search, Users, Sparkles, Cpu } from 'lucide-react'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
+import { Menu, Brain, Upload, Search, Users, Database, Cpu, BarChart3, Wallet } from 'lucide-react'
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -28,23 +28,22 @@ export function Header() {
   }, [])
 
   return (
-    <header className={`fixed top-0 z-50 w-full transition-all duration-300 ${
+    <header className={`fixed top-0 z-50 w-full transition-all duration-500 ${
       scrolled 
-        ? 'bg-black/80 backdrop-blur-md border-b border-white/10' 
+        ? 'bg-slate-950/90 backdrop-blur-md border-b border-slate-800' 
         : 'bg-transparent'
     }`}>
-      <div className="container flex h-16 items-center justify-between px-4">
+      <div className="container flex h-20 items-center justify-between px-6">
         <div className="flex items-center space-x-4">
-          <Link href="/" className="flex items-center space-x-2 group">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Brain className="h-5 w-5 text-white" />
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Brain className="h-6 w-6 text-white" />
             </div>
-            <span className="font-bold text-xl bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+            <span className="font-light text-2xl text-white">
               DeHug
             </span>
-            <Badge variant="secondary" className="hidden sm:inline-flex bg-blue-500/20 text-blue-300 border-blue-500/30">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Beta
+            <Badge variant="outline" className="hidden sm:inline-flex border-slate-600 text-slate-400 bg-slate-900/50">
+              Enterprise
             </Badge>
           </Link>
         </div>
@@ -53,50 +52,50 @@ export function Header() {
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
-              <NavigationMenuTrigger className="bg-transparent text-gray-300 hover:text-white hover:bg-white/10">
-                Explore
+              <NavigationMenuTrigger className="bg-transparent text-slate-300 hover:text-white hover:bg-slate-800/50 font-light">
+                Platform
               </NavigationMenuTrigger>
               <NavigationMenuContent>
-                <div className="grid gap-3 p-6 w-[400px] bg-black/90 backdrop-blur-md border border-white/10 rounded-lg">
+                <div className="grid gap-3 p-8 w-[500px] bg-slate-950/95 backdrop-blur-md border border-slate-800">
                   <NavigationMenuLink asChild>
                     <Link
                       href="/models"
-                      className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors group"
+                      className="flex items-center space-x-4 p-4 hover:bg-slate-800/30 transition-colors group"
                     >
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Brain className="h-5 w-5 text-white" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Brain className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <div className="font-medium text-white">Models</div>
-                        <div className="text-sm text-gray-400">Browse ML models</div>
+                        <div className="font-medium text-white">AI Models</div>
+                        <div className="text-sm text-slate-400 font-light">Enterprise-grade model repository</div>
                       </div>
                     </Link>
                   </NavigationMenuLink>
                   <NavigationMenuLink asChild>
                     <Link
                       href="/datasets"
-                      className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors group"
+                      className="flex items-center space-x-4 p-4 hover:bg-slate-800/30 transition-colors group"
                     >
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Search className="h-5 w-5 text-white" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Database className="h-6 w-6 text-white" />
                       </div>
                       <div>
                         <div className="font-medium text-white">Datasets</div>
-                        <div className="text-sm text-gray-400">Discover training data</div>
+                        <div className="text-sm text-slate-400 font-light">Curated training data</div>
                       </div>
                     </Link>
                   </NavigationMenuLink>
                   <NavigationMenuLink asChild>
                     <Link
-                      href="/inference"
-                      className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors group"
+                      href="/insights"
+                      className="flex items-center space-x-4 p-4 hover:bg-slate-800/30 transition-colors group"
                     >
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Cpu className="h-5 w-5 text-white" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <BarChart3 className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <div className="font-medium text-white">Inference</div>
-                        <div className="text-sm text-gray-400">Run models online</div>
+                        <div className="font-medium text-white">Analytics</div>
+                        <div className="text-sm text-slate-400 font-light">AI-powered insights</div>
                       </div>
                     </Link>
                   </NavigationMenuLink>
@@ -105,22 +104,15 @@ export function Header() {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Link href="/upload" legacyBehavior passHref>
-                <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50">
-                  Upload
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/community" legacyBehavior passHref>
-                <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50">
-                  Community
+                <NavigationMenuLink className="group inline-flex h-12 w-max items-center justify-center px-6 py-2 text-sm font-light text-slate-300 transition-colors hover:bg-slate-800/50 hover:text-white focus:bg-slate-800/50 focus:text-white focus:outline-none">
+                  Deploy
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Link href="/docs" legacyBehavior passHref>
-                <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50">
-                  Docs
+                <NavigationMenuLink className="group inline-flex h-12 w-max items-center justify-center px-6 py-2 text-sm font-light text-slate-300 transition-colors hover:bg-slate-800/50 hover:text-white focus:bg-slate-800/50 focus:text-white focus:outline-none">
+                  Documentation
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
@@ -128,54 +120,57 @@ export function Header() {
         </NavigationMenu>
 
         <div className="flex items-center space-x-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="hidden sm:inline-flex border-slate-600 text-slate-300 hover:bg-slate-800/50 font-light"
+          >
+            <Wallet className="h-4 w-4 mr-2" />
+            Connect Wallet
+          </Button>
+          
           {/* Mobile Navigation */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="md:hidden text-gray-300 hover:text-white hover:bg-white/10">
-                <Menu className="h-5 w-5" />
+              <Button variant="ghost" size="sm" className="md:hidden text-slate-300 hover:text-white hover:bg-slate-800/50">
+                <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] bg-black/95 backdrop-blur-md border-l border-white/10">
-              <div className="flex flex-col space-y-4 mt-8">
+            <SheetContent side="right" className="w-[350px] bg-slate-950/95 backdrop-blur-md border-l border-slate-800">
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              <SheetDescription className="sr-only">
+                Mobile navigation menu for DeHug platform
+              </SheetDescription>
+              <div className="flex flex-col space-y-6 mt-12">
                 <Link
                   href="/models"
-                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors group"
+                  className="flex items-center space-x-4 p-4 hover:bg-slate-800/30 transition-colors group"
                   onClick={() => setIsOpen(false)}
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                    <Brain className="h-4 w-4 text-white" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center">
+                    <Brain className="h-5 w-5 text-white" />
                   </div>
-                  <span className="text-white">Models</span>
+                  <span className="text-white font-light">AI Models</span>
                 </Link>
                 <Link
                   href="/datasets"
-                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors group"
+                  className="flex items-center space-x-4 p-4 hover:bg-slate-800/30 transition-colors group"
                   onClick={() => setIsOpen(false)}
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                    <Search className="h-4 w-4 text-white" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center">
+                    <Database className="h-5 w-5 text-white" />
                   </div>
-                  <span className="text-white">Datasets</span>
+                  <span className="text-white font-light">Datasets</span>
                 </Link>
                 <Link
                   href="/upload"
-                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors group"
+                  className="flex items-center space-x-4 p-4 hover:bg-slate-800/30 transition-colors group"
                   onClick={() => setIsOpen(false)}
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center">
-                    <Upload className="h-4 w-4 text-white" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center">
+                    <Upload className="h-5 w-5 text-white" />
                   </div>
-                  <span className="text-white">Upload</span>
-                </Link>
-                <Link
-                  href="/community"
-                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors group"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                    <Users className="h-4 w-4 text-white" />
-                  </div>
-                  <span className="text-white">Community</span>
+                  <span className="text-white font-light">Deploy</span>
                 </Link>
               </div>
             </SheetContent>

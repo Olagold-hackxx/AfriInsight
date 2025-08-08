@@ -6,103 +6,92 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter, Download, Eye, Calendar, User, BarChart3, Shield, Sparkles } from 'lucide-react'
+import { Search, Filter, Download, Eye, Calendar, User, BarChart3, Shield, Database, Coins, TrendingUp, Star } from 'lucide-react'
 import Link from "next/link"
+import { DownloadStatsComponent } from "@/components/ui/download-stats"
 
 // Mock data for datasets
 const mockDatasets = [
   {
     id: "1",
-    title: "Kenya Agricultural Production 2020-2023",
-    description: "Comprehensive data on crop yields, rainfall patterns, and farming practices across Kenya's agricultural regions.",
-    category: "Agriculture",
-    author: "Kenya Ministry of Agriculture",
+    title: "Common Crawl Web Text",
+    description: "Large-scale web text dataset extracted from Common Crawl for language model training.",
+    category: "Natural Language Processing",
+    author: "common-crawl",
     uploadDate: "2024-01-15",
-    downloads: 1247,
-    size: "2.3 MB",
-    format: "CSV",
-    tags: ["agriculture", "kenya", "crops", "rainfall"],
-    insights: 23,
-    verified: true
+    downloads: 45600,
+    size: "40.2 GB",
+    format: "JSON Lines",
+    tags: ["web-text", "language-modeling", "large-scale"],
+    insights: 156,
+    verified: true,
+    license: "CC BY 4.0",
+    nftValue: "5.2 ETH",
+    trending: true,
+    samples: "2.1B"
   },
   {
     id: "2",
-    title: "West Africa Malaria Surveillance Data",
-    description: "Disease surveillance data covering malaria cases, prevention measures, and treatment outcomes across 8 West African countries.",
-    category: "Health",
-    author: "WHO Africa Regional Office",
-    uploadDate: "2024-01-10",
-    downloads: 892,
-    size: "5.7 MB",
-    format: "JSON",
-    tags: ["health", "malaria", "west-africa", "surveillance"],
-    insights: 15,
-    verified: true
+    title: "ImageNet-1K",
+    description: "Standard computer vision dataset with 1.2M images across 1000 object categories.",
+    category: "Computer Vision",
+    author: "stanford-vision",
+    uploadDate: "2024-01-12",
+    downloads: 89200,
+    size: "144 GB",
+    format: "Images + JSON",
+    tags: ["image-classification", "computer-vision", "benchmark"],
+    insights: 234,
+    verified: true,
+    license: "Custom Research",
+    nftValue: "8.7 ETH",
+    trending: true,
+    samples: "1.2M"
   },
   {
     id: "3",
-    title: "South African Education Statistics 2023",
-    description: "Student enrollment, performance metrics, and resource allocation data from South African schools.",
-    category: "Education",
-    author: "SA Department of Education",
-    uploadDate: "2024-01-08",
-    downloads: 634,
-    size: "1.8 MB",
-    format: "CSV",
-    tags: ["education", "south-africa", "schools", "enrollment"],
-    insights: 31,
-    verified: false
+    title: "LibriSpeech ASR",
+    description: "Large corpus of read English speech for automatic speech recognition research.",
+    category: "Audio",
+    author: "openslr",
+    uploadDate: "2024-01-10",
+    downloads: 23400,
+    size: "57 GB",
+    format: "FLAC + TXT",
+    tags: ["speech-recognition", "audio", "english"],
+    insights: 89,
+    verified: true,
+    license: "CC BY 4.0",
+    nftValue: "3.4 ETH",
+    trending: false,
+    samples: "1000h"
   },
   {
     id: "4",
-    title: "East Africa Climate Change Indicators",
-    description: "Temperature, precipitation, and extreme weather event data across East African countries from 2010-2023.",
-    category: "Climate",
-    author: "East African Climate Observatory",
-    uploadDate: "2024-01-05",
-    downloads: 1156,
-    size: "8.2 MB",
-    format: "CSV",
-    tags: ["climate", "east-africa", "temperature", "precipitation"],
-    insights: 42,
-    verified: true
-  },
-  {
-    id: "5",
-    title: "Nigeria Population Demographics 2023",
-    description: "Detailed demographic data including age distribution, urbanization trends, and migration patterns.",
-    category: "Demographics",
-    author: "Nigerian Bureau of Statistics",
-    uploadDate: "2024-01-03",
-    downloads: 2103,
-    size: "3.4 MB",
-    format: "JSON",
-    tags: ["demographics", "nigeria", "population", "urbanization"],
-    insights: 18,
-    verified: true
-  },
-  {
-    id: "6",
-    title: "Ghana Economic Indicators 2020-2023",
-    description: "GDP growth, inflation rates, employment statistics, and trade data for Ghana's economic analysis.",
-    category: "Economics",
-    author: "Bank of Ghana",
-    uploadDate: "2023-12-28",
-    downloads: 756,
-    size: "1.2 MB",
-    format: "CSV",
-    tags: ["economics", "ghana", "gdp", "employment"],
-    insights: 27,
-    verified: false
+    title: "MS COCO 2017",
+    description: "Object detection, segmentation, and captioning dataset with 330K images.",
+    category: "Computer Vision",
+    author: "microsoft",
+    uploadDate: "2024-01-08",
+    downloads: 67800,
+    size: "25 GB",
+    format: "Images + JSON",
+    tags: ["object-detection", "segmentation", "captioning"],
+    insights: 178,
+    verified: true,
+    license: "CC BY 4.0",
+    nftValue: "4.1 ETH",
+    trending: false,
+    samples: "330K"
   }
 ]
 
-const categories = ["All", "Agriculture", "Health", "Education", "Climate", "Demographics", "Economics"]
+const categories = ["All", "Natural Language Processing", "Computer Vision", "Audio", "Multimodal", "Tabular"]
 
 export default function DatasetsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [sortBy, setSortBy] = useState("recent")
+  const [sortBy, setSortBy] = useState("trending")
 
   const filteredDatasets = mockDatasets.filter(dataset => {
     const matchesSearch = dataset.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,90 +107,80 @@ export default function DatasetsPage() {
         return b.downloads - a.downloads
       case "insights":
         return b.insights - a.insights
-      case "recent":
+      case "nft-value":
+        return parseFloat(b.nftValue.replace(" ETH", "")) - parseFloat(a.nftValue.replace(" ETH", ""))
+      case "trending":
       default:
-        return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+        return (b.trending ? 1 : 0) - (a.trending ? 1 : 0) || b.downloads - a.downloads
     }
   })
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white">
       {/* Background Effects */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-green-900/20" />
-        <div className="absolute inset-0">
-          {[...Array(30)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-blue-400/20 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 3}s`
-              }}
-            />
-          ))}
-        </div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-6 py-12">
         {/* Header */}
-        <div className="mb-12 text-center">
+        <div className="mb-16 text-center">
           <Badge 
-            variant="secondary" 
-            className="mb-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30 text-blue-300 px-4 py-2 backdrop-blur-sm"
+            variant="outline" 
+            className="mb-6 border-slate-600 text-slate-300 px-4 py-2 backdrop-blur-sm bg-slate-900/50"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
-            AI-Powered Discovery
+            <Database className="w-4 h-4 mr-2" />
+            Decentralized Dataset Hub
           </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-white via-blue-100 to-green-100 bg-clip-text text-transparent">
-              Dataset
+          <h1 className="text-5xl md:text-7xl font-light mb-6 leading-none">
+            <span className="text-white">
+              Training
             </span>
             <br />
-            <span className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-              Explorer
+            <span className="text-slate-400 font-thin">
+              Datasets
             </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Discover and explore public datasets from across Africa. Generate insights, download data, and contribute to the community.
+          <p className="text-xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
+            Access high-quality datasets for machine learning research and development. 
+            Each dataset is tokenized as an NFT, creating value for data contributors.
           </p>
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-8 space-y-6">
-          <div className="flex flex-col lg:flex-row gap-4">
+        <div className="mb-12 space-y-8">
+          <div className="flex flex-col lg:flex-row gap-6">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
               <Input
-                placeholder="Search datasets, tags, or descriptions..."
+                placeholder="Search datasets, authors, or domains..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-blue-500/50 backdrop-blur-sm h-12"
+                className="pl-12 bg-slate-900/30 border-slate-700 text-white placeholder:text-slate-400 focus:border-slate-500 backdrop-blur-sm h-14 text-lg"
               />
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full lg:w-[200px] bg-white/5 border-white/10 text-white backdrop-blur-sm h-12">
+              <SelectTrigger className="w-full lg:w-[220px] bg-slate-900/30 border-slate-700 text-white backdrop-blur-sm h-14">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-white/10 text-white">
+              <SelectContent className="bg-slate-900 border-slate-700 text-white">
                 {categories.map(category => (
-                  <SelectItem key={category} value={category} className="focus:bg-white/10">
+                  <SelectItem key={category} value={category} className="focus:bg-slate-800">
                     {category}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full lg:w-[200px] bg-white/5 border-white/10 text-white backdrop-blur-sm h-12">
+              <SelectTrigger className="w-full lg:w-[220px] bg-slate-900/30 border-slate-700 text-white backdrop-blur-sm h-14">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-white/10 text-white">
-                <SelectItem value="recent" className="focus:bg-white/10">Most Recent</SelectItem>
-                <SelectItem value="downloads" className="focus:bg-white/10">Most Downloaded</SelectItem>
-                <SelectItem value="insights" className="focus:bg-white/10">Most Insights</SelectItem>
+              <SelectContent className="bg-slate-900 border-slate-700 text-white">
+                <SelectItem value="trending" className="focus:bg-slate-800">Trending</SelectItem>
+                <SelectItem value="downloads" className="focus:bg-slate-800">Most Downloaded</SelectItem>
+                <SelectItem value="insights" className="focus:bg-slate-800">Most Analyzed</SelectItem>
+                <SelectItem value="nft-value" className="focus:bg-slate-800">NFT Value</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -214,10 +193,10 @@ export default function DatasetsPage() {
                 variant={selectedCategory === category ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(category)}
-                className={`text-sm transition-all duration-300 ${
+                className={`text-sm transition-all duration-300 font-light ${
                   selectedCategory === category
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0'
-                    : 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:border-white/30'
+                    ? 'bg-white text-black hover:bg-slate-100'
+                    : 'bg-slate-900/30 border-slate-700 text-slate-300 hover:bg-slate-800/50 hover:border-slate-600'
                 }`}
               >
                 {category}
@@ -228,78 +207,96 @@ export default function DatasetsPage() {
 
         {/* Results Count */}
         <div className="mb-8">
-          <p className="text-gray-400">
-            Showing <span className="text-blue-400 font-semibold">{sortedDatasets.length}</span> of <span className="text-blue-400 font-semibold">{mockDatasets.length}</span> datasets
+          <p className="text-slate-400 font-light">
+            Showing <span className="text-white font-medium">{sortedDatasets.length}</span> of <span className="text-white font-medium">{mockDatasets.length}</span> datasets
           </p>
         </div>
 
-        {/* Dataset Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Datasets Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {sortedDatasets.map((dataset, index) => (
             <Card 
               key={dataset.id} 
-              className="group bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border-white/10 hover:border-white/20 transition-all duration-500 hover:scale-105 cursor-pointer"
+              className="group bg-slate-900/20 backdrop-blur-sm border-slate-800 hover:border-slate-600 transition-all duration-500 hover:bg-slate-800/20 cursor-pointer"
               style={{ 
                 animation: `fadeInUp 0.6s ease-out ${index * 100}ms both`
               }}
             >
               <CardHeader className="pb-4">
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Badge 
-                      variant="secondary" 
-                      className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30 text-blue-300 text-xs"
+                      variant="outline" 
+                      className="border-slate-700 text-slate-300 bg-slate-800/30 text-xs"
                     >
                       {dataset.category}
                     </Badge>
                     {dataset.verified && (
-                      <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">
+                      <Badge className="bg-slate-700 text-slate-200 border-slate-600 text-xs">
                         <Shield className="h-3 w-3 mr-1" />
                         Verified
                       </Badge>
                     )}
+                    {dataset.trending && (
+                      <Badge className="bg-amber-900/30 text-amber-300 border-amber-700 text-xs">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        Trending
+                      </Badge>
+                    )}
                   </div>
-                  <div className="flex items-center text-xs text-gray-400">
+                  <div className="flex items-center text-xs text-slate-400">
                     <BarChart3 className="h-3 w-3 mr-1" />
                     {dataset.insights}
                   </div>
                 </div>
-                <CardTitle className="text-lg leading-tight text-white group-hover:text-blue-300 transition-colors">
+                <CardTitle className="text-xl leading-tight text-white group-hover:text-slate-200 transition-colors font-light">
                   {dataset.title}
                 </CardTitle>
-                <CardDescription className="text-sm text-gray-400 line-clamp-3">
+                <CardDescription className="text-sm text-slate-400 line-clamp-3 font-light">
                   {dataset.description}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  {/* NFT Value & Samples */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-700">
+                      <div className="flex items-center">
+                        <Coins className="h-4 w-4 text-amber-400 mr-2" />
+                        <span className="text-xs text-slate-300 font-light">NFT Value</span>
+                      </div>
+                      <span className="text-amber-400 font-medium text-sm">{dataset.nftValue}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-700">
+                      <span className="text-xs text-slate-300 font-light">Samples</span>
+                      <span className="text-slate-200 font-medium text-sm">{dataset.samples}</span>
+                    </div>
+                  </div>
+
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1">
                     {dataset.tags.slice(0, 3).map(tag => (
-                      <Badge key={tag} variant="outline" className="text-xs bg-white/5 border-white/20 text-gray-300">
+                      <Badge key={tag} variant="outline" className="text-xs bg-slate-800/30 border-slate-700 text-slate-300">
                         {tag}
                       </Badge>
                     ))}
-                    {dataset.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs bg-white/5 border-white/20 text-gray-300">
-                        +{dataset.tags.length - 3}
-                      </Badge>
-                    )}
                   </div>
 
                   {/* Metadata */}
-                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 font-light">
                     <div className="flex items-center">
                       <User className="h-3 w-3 mr-1" />
-                      {dataset.author.length > 20 ? `${dataset.author.substring(0, 20)}...` : dataset.author}
+                      {dataset.author}
+                    </div>
+                    <div className="flex items-center">
+                      <DownloadStatsComponent 
+                        itemName={dataset.title}
+                        className="text-xs"
+                      />
                     </div>
                     <div className="flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
                       {new Date(dataset.uploadDate).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center">
-                      <Download className="h-3 w-3 mr-1" />
-                      {dataset.downloads.toLocaleString()}
                     </div>
                     <div>
                       {dataset.size} • {dataset.format}
@@ -307,24 +304,24 @@ export default function DatasetsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-3 pt-2">
                     <Link href={`/datasets/${dataset.id}`} className="flex-1">
                       <Button 
                         size="sm" 
-                        className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white border-0"
+                        className="w-full bg-white text-black hover:bg-slate-100 font-medium"
                       >
-                        <Eye className="h-3 w-3 mr-1" />
-                        Explore
+                        <Eye className="h-3 w-3 mr-2" />
+                        Explore Dataset
                       </Button>
                     </Link>
                     <Link href={`/insights?dataset=${dataset.id}`}>
                       <Button 
                         size="sm" 
                         variant="outline"
-                        className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:border-white/30"
+                        className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600"
                       >
                         <BarChart3 className="h-3 w-3 mr-1" />
-                        AI
+                        Analyze
                       </Button>
                     </Link>
                   </div>
@@ -336,47 +333,34 @@ export default function DatasetsPage() {
 
         {/* Load More */}
         {sortedDatasets.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Search className="h-8 w-8 text-gray-400" />
+          <div className="text-center py-20">
+            <div className="w-20 h-20 bg-slate-800/30 border border-slate-700 flex items-center justify-center mx-auto mb-8">
+              <Search className="h-10 w-10 text-slate-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No datasets found</h3>
-            <p className="text-gray-400 mb-6">Try adjusting your search criteria or browse all categories.</p>
+            <h3 className="text-2xl font-light text-white mb-4">No datasets found</h3>
+            <p className="text-slate-400 mb-8 font-light">Try adjusting your search criteria or browse all categories.</p>
             <Button 
               variant="outline" 
               onClick={() => {
                 setSearchTerm("")
                 setSelectedCategory("All")
               }}
-              className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:border-white/30"
+              className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600"
             >
               Clear Filters
             </Button>
           </div>
         ) : (
-          <div className="text-center mt-12">
+          <div className="text-center mt-16">
             <Button 
               variant="outline"
-              className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:border-white/30 px-8 py-3"
+              className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600 px-12 py-4 text-lg font-light"
             >
               Load More Datasets
             </Button>
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   )
 }

@@ -6,123 +6,98 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter, Download, Eye, Calendar, User, BarChart3, Shield, Sparkles, Brain, Cpu, Zap } from 'lucide-react'
+import { Search, Filter, Download, Eye, Calendar, User, BarChart3, Shield, Brain, Cpu, Zap, Star, Coins, TrendingUp } from 'lucide-react'
 import Link from "next/link"
+import { DownloadStatsComponent } from "@/components/ui/download-stats"
 
 // Mock data for ML models
 const mockModels = [
   {
     id: "1",
     title: "GPT-2 Small Fine-tuned",
-    description: "A fine-tuned GPT-2 model for text generation with improved performance on creative writing tasks.",
+    description: "A fine-tuned GPT-2 model for creative writing with enhanced storytelling capabilities.",
     category: "Natural Language Processing",
     task: "Text Generation",
-    author: "OpenAI Community",
+    author: "openai-community",
     uploadDate: "2024-01-15",
-    downloads: 12470,
+    downloads: 124700,
     size: "548 MB",
     format: "PyTorch",
-    tags: ["gpt-2", "text-generation", "creative-writing", "fine-tuned"],
-    likes: 234,
+    tags: ["gpt-2", "text-generation", "creative-writing"],
+    likes: 2340,
     verified: true,
     license: "MIT",
-    framework: "transformers"
+    framework: "transformers",
+    nftValue: "2.4 ETH",
+    trending: true
   },
   {
     id: "2",
     title: "ResNet-50 Image Classifier",
-    description: "Pre-trained ResNet-50 model for image classification on ImageNet dataset with 76.1% top-1 accuracy.",
+    description: "Pre-trained ResNet-50 for ImageNet classification with 76.1% top-1 accuracy.",
     category: "Computer Vision",
     task: "Image Classification",
-    author: "Microsoft Research",
+    author: "microsoft",
     uploadDate: "2024-01-12",
-    downloads: 8920,
+    downloads: 89200,
     size: "102 MB",
     format: "ONNX",
-    tags: ["resnet", "image-classification", "imagenet", "computer-vision"],
-    likes: 189,
+    tags: ["resnet", "image-classification", "imagenet"],
+    likes: 1890,
     verified: true,
     license: "Apache 2.0",
-    framework: "pytorch"
+    framework: "pytorch",
+    nftValue: "1.8 ETH",
+    trending: false
   },
   {
     id: "3",
     title: "Whisper Base English",
-    description: "OpenAI's Whisper model for automatic speech recognition, optimized for English language.",
+    description: "OpenAI's Whisper model optimized for English speech recognition tasks.",
     category: "Audio",
     task: "Speech Recognition",
-    author: "OpenAI",
+    author: "openai",
     uploadDate: "2024-01-10",
-    downloads: 15600,
+    downloads: 156000,
     size: "290 MB",
     format: "PyTorch",
-    tags: ["whisper", "speech-recognition", "audio", "english"],
-    likes: 456,
+    tags: ["whisper", "speech-recognition", "audio"],
+    likes: 4560,
     verified: true,
     license: "MIT",
-    framework: "transformers"
+    framework: "transformers",
+    nftValue: "3.2 ETH",
+    trending: true
   },
   {
     id: "4",
-    title: "YOLO v8 Object Detection",
-    description: "State-of-the-art object detection model with real-time performance and high accuracy.",
-    category: "Computer Vision",
-    task: "Object Detection",
-    author: "Ultralytics",
-    uploadDate: "2024-01-08",
-    downloads: 6780,
-    size: "22 MB",
-    format: "PyTorch",
-    tags: ["yolo", "object-detection", "real-time", "computer-vision"],
-    likes: 312,
-    verified: false,
-    license: "GPL-3.0",
-    framework: "ultralytics"
-  },
-  {
-    id: "5",
     title: "BERT Base Multilingual",
-    description: "BERT model pre-trained on 104 languages for multilingual natural language understanding tasks.",
+    description: "BERT model pre-trained on 104 languages for multilingual NLU tasks.",
     category: "Natural Language Processing",
     task: "Text Classification",
-    author: "Google Research",
+    author: "google",
     uploadDate: "2024-01-05",
-    downloads: 9340,
+    downloads: 93400,
     size: "714 MB",
     format: "TensorFlow",
-    tags: ["bert", "multilingual", "classification", "nlp"],
-    likes: 278,
+    tags: ["bert", "multilingual", "classification"],
+    likes: 2780,
     verified: true,
     license: "Apache 2.0",
-    framework: "transformers"
-  },
-  {
-    id: "6",
-    title: "Stable Diffusion v2.1",
-    description: "Text-to-image diffusion model capable of generating high-quality images from text prompts.",
-    category: "Computer Vision",
-    task: "Text-to-Image",
-    author: "Stability AI",
-    uploadDate: "2024-01-03",
-    downloads: 23100,
-    size: "5.2 GB",
-    format: "PyTorch",
-    tags: ["stable-diffusion", "text-to-image", "diffusion", "generative"],
-    likes: 892,
-    verified: true,
-    license: "CreativeML Open RAIL-M",
-    framework: "diffusers"
+    framework: "transformers",
+    nftValue: "2.1 ETH",
+    trending: false
   }
 ]
 
 const categories = ["All", "Natural Language Processing", "Computer Vision", "Audio", "Multimodal", "Reinforcement Learning"]
-const tasks = ["All", "Text Generation", "Image Classification", "Object Detection", "Speech Recognition", "Text-to-Image", "Text Classification"]
+const tasks = ["All", "Text Generation", "Image Classification", "Object Detection", "Speech Recognition", "Text Classification"]
 
 export default function ModelsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [selectedTask, setSelectedTask] = useState("All")
-  const [sortBy, setSortBy] = useState("recent")
+  const [sortBy, setSortBy] = useState("trending")
 
   const filteredModels = mockModels.filter(model => {
     const matchesSearch = model.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -139,102 +114,80 @@ export default function ModelsPage() {
         return b.downloads - a.downloads
       case "likes":
         return b.likes - a.likes
-      case "recent":
+      case "nft-value":
+        return parseFloat(b.nftValue.replace(" ETH", "")) - parseFloat(a.nftValue.replace(" ETH", ""))
+      case "trending":
       default:
-        return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+        return (b.trending ? 1 : 0) - (a.trending ? 1 : 0) || b.downloads - a.downloads
     }
   })
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white">
       {/* Background Effects */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-green-900/20" />
-        <div className="absolute inset-0">
-          {[...Array(30)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-blue-400/20 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 3}s`
-              }}
-            />
-          ))}
-        </div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-6 py-12">
         {/* Header */}
-        <div className="mb-12 text-center">
+        <div className="mb-16 text-center">
           <Badge 
-            variant="secondary" 
-            className="mb-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30 text-blue-300 px-4 py-2 backdrop-blur-sm"
+            variant="outline" 
+            className="mb-6 border-slate-600 text-slate-300 px-4 py-2 backdrop-blur-sm bg-slate-900/50"
           >
             <Brain className="w-4 h-4 mr-2" />
-            Decentralized Models
+            Decentralized Model Hub
           </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-white via-blue-100 to-green-100 bg-clip-text text-transparent">
-              Model
+          <h1 className="text-5xl md:text-7xl font-light mb-6 leading-none">
+            <span className="text-white">
+              Discover
             </span>
             <br />
-            <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-600 bg-clip-text text-transparent">
-              Hub
+            <span className="text-slate-400 font-thin">
+              AI Models
             </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Discover and download machine learning models stored permanently on IPFS. From language models to computer vision, find the perfect model for your project.
+          <p className="text-xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
+            Browse thousands of machine learning models hosted on decentralized infrastructure. 
+            Each model is backed by an NFT that appreciates with usage.
           </p>
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-8 space-y-6">
-          <div className="flex flex-col lg:flex-row gap-4">
+        <div className="mb-12 space-y-8">
+          <div className="flex flex-col lg:flex-row gap-6">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
               <Input
-                placeholder="Search models, tasks, or authors..."
+                placeholder="Search models, authors, or tasks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-blue-500/50 backdrop-blur-sm h-12"
+                className="pl-12 bg-slate-900/30 border-slate-700 text-white placeholder:text-slate-400 focus:border-slate-500 backdrop-blur-sm h-14 text-lg"
               />
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full lg:w-[200px] bg-white/5 border-white/10 text-white backdrop-blur-sm h-12">
+              <SelectTrigger className="w-full lg:w-[220px] bg-slate-900/30 border-slate-700 text-white backdrop-blur-sm h-14">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-white/10 text-white">
+              <SelectContent className="bg-slate-900 border-slate-700 text-white">
                 {categories.map(category => (
-                  <SelectItem key={category} value={category} className="focus:bg-white/10">
+                  <SelectItem key={category} value={category} className="focus:bg-slate-800">
                     {category}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={selectedTask} onValueChange={setSelectedTask}>
-              <SelectTrigger className="w-full lg:w-[200px] bg-white/5 border-white/10 text-white backdrop-blur-sm h-12">
-                <SelectValue placeholder="Task" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-white/10 text-white">
-                {tasks.map(task => (
-                  <SelectItem key={task} value={task} className="focus:bg-white/10">
-                    {task}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full lg:w-[200px] bg-white/5 border-white/10 text-white backdrop-blur-sm h-12">
+              <SelectTrigger className="w-full lg:w-[220px] bg-slate-900/30 border-slate-700 text-white backdrop-blur-sm h-14">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-white/10 text-white">
-                <SelectItem value="recent" className="focus:bg-white/10">Most Recent</SelectItem>
-                <SelectItem value="downloads" className="focus:bg-white/10">Most Downloaded</SelectItem>
-                <SelectItem value="likes" className="focus:bg-white/10">Most Liked</SelectItem>
+              <SelectContent className="bg-slate-900 border-slate-700 text-white">
+                <SelectItem value="trending" className="focus:bg-slate-800">Trending</SelectItem>
+                <SelectItem value="downloads" className="focus:bg-slate-800">Most Downloaded</SelectItem>
+                <SelectItem value="likes" className="focus:bg-slate-800">Most Liked</SelectItem>
+                <SelectItem value="nft-value" className="focus:bg-slate-800">NFT Value</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -247,10 +200,10 @@ export default function ModelsPage() {
                 variant={selectedCategory === category ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(category)}
-                className={`text-sm transition-all duration-300 ${
+                className={`text-sm transition-all duration-300 font-light ${
                   selectedCategory === category
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0'
-                    : 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:border-white/30'
+                    ? 'bg-white text-black hover:bg-slate-100'
+                    : 'bg-slate-900/30 border-slate-700 text-slate-300 hover:bg-slate-800/50 hover:border-slate-600'
                 }`}
               >
                 {category}
@@ -261,8 +214,8 @@ export default function ModelsPage() {
 
         {/* Results Count */}
         <div className="mb-8">
-          <p className="text-gray-400">
-            Showing <span className="text-blue-400 font-semibold">{sortedModels.length}</span> of <span className="text-blue-400 font-semibold">{mockModels.length}</span> models
+          <p className="text-slate-400 font-light">
+            Showing <span className="text-white font-medium">{sortedModels.length}</span> of <span className="text-white font-medium">{mockModels.length}</span> models
           </p>
         </div>
 
@@ -271,68 +224,80 @@ export default function ModelsPage() {
           {sortedModels.map((model, index) => (
             <Card 
               key={model.id} 
-              className="group bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border-white/10 hover:border-white/20 transition-all duration-500 hover:scale-105 cursor-pointer"
+              className="group bg-slate-900/20 backdrop-blur-sm border-slate-800 hover:border-slate-600 transition-all duration-500 hover:bg-slate-800/20 cursor-pointer"
               style={{ 
                 animation: `fadeInUp 0.6s ease-out ${index * 100}ms both`
               }}
             >
               <CardHeader className="pb-4">
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Badge 
-                      variant="secondary" 
-                      className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30 text-blue-300 text-xs"
+                      variant="outline" 
+                      className="border-slate-700 text-slate-300 bg-slate-800/30 text-xs"
                     >
                       {model.task}
                     </Badge>
                     {model.verified && (
-                      <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">
+                      <Badge className="bg-slate-700 text-slate-200 border-slate-600 text-xs">
                         <Shield className="h-3 w-3 mr-1" />
                         Verified
                       </Badge>
                     )}
+                    {model.trending && (
+                      <Badge className="bg-amber-900/30 text-amber-300 border-amber-700 text-xs">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        Trending
+                      </Badge>
+                    )}
                   </div>
-                  <div className="flex items-center text-xs text-gray-400">
-                    <Zap className="h-3 w-3 mr-1" />
-                    {model.likes}
+                  <div className="flex items-center text-xs text-slate-400">
+                    <Star className="h-3 w-3 mr-1" />
+                    {model.likes.toLocaleString()}
                   </div>
                 </div>
-                <CardTitle className="text-lg leading-tight text-white group-hover:text-blue-300 transition-colors">
+                <CardTitle className="text-xl leading-tight text-white group-hover:text-slate-200 transition-colors font-light">
                   {model.title}
                 </CardTitle>
-                <CardDescription className="text-sm text-gray-400 line-clamp-3">
+                <CardDescription className="text-sm text-slate-400 line-clamp-3 font-light">
                   {model.description}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  {/* NFT Value */}
+                  <div className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-700">
+                    <div className="flex items-center">
+                      <Coins className="h-4 w-4 text-amber-400 mr-2" />
+                      <span className="text-sm text-slate-300 font-light">NFT Value</span>
+                    </div>
+                    <span className="text-amber-400 font-medium">{model.nftValue}</span>
+                  </div>
+
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1">
                     {model.tags.slice(0, 3).map(tag => (
-                      <Badge key={tag} variant="outline" className="text-xs bg-white/5 border-white/20 text-gray-300">
+                      <Badge key={tag} variant="outline" className="text-xs bg-slate-800/30 border-slate-700 text-slate-300">
                         {tag}
                       </Badge>
                     ))}
-                    {model.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs bg-white/5 border-white/20 text-gray-300">
-                        +{model.tags.length - 3}
-                      </Badge>
-                    )}
                   </div>
 
                   {/* Metadata */}
-                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 font-light">
                     <div className="flex items-center">
                       <User className="h-3 w-3 mr-1" />
-                      {model.author.length > 15 ? `${model.author.substring(0, 15)}...` : model.author}
+                      {model.author}
+                    </div>
+                    <div className="flex items-center">
+                      <DownloadStatsComponent 
+                        itemName={model.title}
+                        className="text-xs"
+                      />
                     </div>
                     <div className="flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
                       {new Date(model.uploadDate).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center">
-                      <Download className="h-3 w-3 mr-1" />
-                      {model.downloads.toLocaleString()}
                     </div>
                     <div>
                       {model.size} • {model.format}
@@ -340,23 +305,23 @@ export default function ModelsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-3 pt-2">
                     <Link href={`/models/${model.id}`} className="flex-1">
                       <Button 
                         size="sm" 
-                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+                        className="w-full bg-white text-black hover:bg-slate-100 font-medium"
                       >
-                        <Eye className="h-3 w-3 mr-1" />
+                        <Eye className="h-3 w-3 mr-2" />
                         View Model
                       </Button>
                     </Link>
                     <Button 
                       size="sm" 
                       variant="outline"
-                      className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:border-white/30"
+                      className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600"
                     >
                       <Cpu className="h-3 w-3 mr-1" />
-                      Run
+                      Use
                     </Button>
                   </div>
                 </div>
@@ -367,12 +332,12 @@ export default function ModelsPage() {
 
         {/* Load More */}
         {sortedModels.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Search className="h-8 w-8 text-gray-400" />
+          <div className="text-center py-20">
+            <div className="w-20 h-20 bg-slate-800/30 border border-slate-700 flex items-center justify-center mx-auto mb-8">
+              <Search className="h-10 w-10 text-slate-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No models found</h3>
-            <p className="text-gray-400 mb-6">Try adjusting your search criteria or browse all categories.</p>
+            <h3 className="text-2xl font-light text-white mb-4">No models found</h3>
+            <p className="text-slate-400 mb-8 font-light">Try adjusting your search criteria or browse all categories.</p>
             <Button 
               variant="outline" 
               onClick={() => {
@@ -380,35 +345,22 @@ export default function ModelsPage() {
                 setSelectedCategory("All")
                 setSelectedTask("All")
               }}
-              className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:border-white/30"
+              className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600"
             >
               Clear Filters
             </Button>
           </div>
         ) : (
-          <div className="text-center mt-12">
+          <div className="text-center mt-16">
             <Button 
               variant="outline"
-              className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:border-white/30 px-8 py-3"
+              className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600 px-12 py-4 text-lg font-light"
             >
               Load More Models
             </Button>
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   )
 }

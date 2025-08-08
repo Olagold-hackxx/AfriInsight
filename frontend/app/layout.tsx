@@ -20,16 +20,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-black text-white`}>
+      <body className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem={false}
           disableTransitionOnChange
         >
-          <div className="flex min-h-screen flex-col">
+          <div className="flex min-h-screen flex-col bg-black text-white">
             <Header />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 pt-16  bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">{children}</main>
             <Footer />
           </div>
         </ThemeProvider>
