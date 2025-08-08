@@ -4,6 +4,8 @@ import "./globals.css"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,9 +31,23 @@ export default function RootLayout({
         >
           <div className="flex min-h-screen flex-col bg-black text-white">
             <Header />
-            <main className="flex-1 pt-16  bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">{children}</main>
+            <main className="flex-1">{children}</main>
             <Footer />
           </div>
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="dark"
+            toastClassName="bg-gray-800 text-white border border-gray-700"
+            progressClassName="bg-orange-500"
+          />
         </ThemeProvider>
       </body>
     </html>
