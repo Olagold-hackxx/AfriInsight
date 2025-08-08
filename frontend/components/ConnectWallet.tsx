@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ConnectButton, darkTheme, useActiveAccount } from "thirdweb/react";
 import type { Account } from "thirdweb/wallets";
 import { useChainSwitch } from "../hooks/useChainSwitch";
-import { liskSepolia } from "../constants/chain";
+import { filecoinCalibrationTestnet } from "../constants/chain";
 
 interface ConnectWalletProps {
   onConnect?: () => void;
@@ -64,8 +64,8 @@ const ConnectWallet = ({ onConnect, label = "Connect Wallet" }: ConnectWalletPro
           connectButton={{ label }}
           wallets={wallets}
           connectModal={{ size: "compact" }}
-          chain={liskSepolia} // Set default chain
-          chains={[liskSepolia]} // Restrict to only Lisk Sepolia
+          chain={filecoinCalibrationTestnet} // Set default chain
+          chains={[filecoinCalibrationTestnet]} // Restrict to only Filecoin Calibration Testnet
           theme={darkTheme({
             colors: {
               primaryButtonBg: "#FFD700",
@@ -80,8 +80,8 @@ const ConnectWallet = ({ onConnect, label = "Connect Wallet" }: ConnectWalletPro
           connectButton={{ label }}
           wallets={wallets}
           connectModal={{ size: "compact" }}
-          chain={liskSepolia} // Set default chain
-          chains={[liskSepolia]} // Restrict to only Lisk Sepolia
+          chain={filecoinCalibrationTestnet} // Set default chain
+          chains={[filecoinCalibrationTestnet]} // Restrict to only Filecoin Calibration Testnet
           theme={darkTheme({
             colors: {
               primaryButtonBg: "#FFD700",
