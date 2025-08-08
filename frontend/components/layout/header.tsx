@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Menu, Brain, Upload, Search, Users, Database, Cpu, BarChart3, Wallet } from 'lucide-react'
+import ConnectWallet from "../ConnectWallet"
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -120,14 +121,15 @@ export function Header() {
         </NavigationMenu>
 
         <div className="flex items-center space-x-4">
-          <Button 
+          {/* <Button 
             variant="outline" 
             size="sm" 
             className="hidden sm:inline-flex border-slate-600 text-slate-300 hover:bg-slate-800/50 font-light"
           >
             <Wallet className="h-4 w-4 mr-2" />
             Connect Wallet
-          </Button>
+          </Button> */}
+          <ConnectWallet />
           
           {/* Mobile Navigation */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>

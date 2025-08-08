@@ -31,7 +31,8 @@
     "react-dropzone": "^14.3.8",
     "react-toastify": "^11.0.5",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "thirdweb": "^5.105.30"
   },
   "devDependencies": {
     "@types/node": "^20",
