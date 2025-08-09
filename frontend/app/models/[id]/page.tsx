@@ -38,8 +38,8 @@ import { DownloadStatsComponent } from "@/components/ui/download-stats";
 import { DownloadButton } from "@/components/ui/download-button";
 import { DeHugAPI } from "@/lib/api";
 import useGetContentMetadata from "@/hooks/DeHug/useGetContentMetadata";
-import useGetContent from "@/hooks/DeHug/useGetContent";
 import { useAccount } from "@/lib/thirdweb-hooks";
+import { toast } from "react-toastify";
 
 export default function ModelDetailPage({
   params,
@@ -53,8 +53,6 @@ export default function ModelDetailPage({
   const { isConnected } = useAccount();
   const tokenId = Number.parseInt(params.id);
 
-  // Get content data and metadata
-
   const {
     metadata,
     isLoading: metadataLoading,
@@ -65,15 +63,12 @@ export default function ModelDetailPage({
   const isLoading = metadataLoading;
   const error = metadataError;
 
-  // // Check if this is a model (contentType === 1)
-  // const isModel = metadata?.contentType === 1
-
   const handleDownload = async () => {
     if (!metadata) return;
     try {
       await DeHugAPI.downloadFromFilecoin(
-        metadata.title,
-        metadata.ipfsHash,
+        metadata.name || "Default Model Name",
+        metadata.properties?.ipfsHash,
         "ui"
       );
     } catch (error) {
@@ -126,7 +121,7 @@ export default function ModelDetailPage({
     );
   }
 
-  // Error state or not a model
+  // Error state or no metadata
   if (error || !metadata) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
@@ -159,42 +154,50 @@ export default function ModelDetailPage({
     );
   }
 
-  // Extract data from content and metadata
-  const properties = metadata?.properties || {};
-  const title = metadata?.name || `Model #${params.id}`;
-  const description =
-    
-    metadata?.description ||
-    "No description available";
-  const category = properties.category || "Machine Learning";
+  // Helper to get attribute value
+  const getAttribute = (trait: string) =>
+    metadata.attributes?.find((a: any) => a.trait_type === trait)?.value;
+
+  const qualityTierMap: { [key: string]: number } = {
+    BASIC: 0,
+    PREMIUM: 1,
+    VERIFIED: 2,
+  };
+  const qualityTierValue = getAttribute("Quality Tier") || "BASIC";
+  const qualityTier = qualityTierMap[qualityTierValue];
+
+  // Extract data from metadata
+  const properties = metadata.properties || {};
+  const title = metadata.name || `Model #${params.id}`;
+  const description = metadata.description || "No description available";
+  const category =
+    properties.category || getAttribute("Category") || "Machine Learning";
   const task = properties.task || "Text Generation";
-  const author = `${metadata.uploader?.slice(
-    0,
-    6
-  )}...${metadata.uploader?.slice(-4)}`;
-  const uploadDate = new Date(metadata.uploadTimestamp * 1000);
-  const downloads = metadata.downloadCount;
-  const likes = Math.floor(metadata.totalPointsEarned / 10);
-  const isVerified = metadata.qualityTier === 2;
+  const author = `${
+    properties.uploader?.slice(0, 6) || getAttribute("Uploader")?.slice(0, 6)
+  }...${properties.uploader?.slice(-4) || getAttribute("Uploader")?.slice(-4)}`;
+  const uploadDate = properties.uploadTimestamp
+    ? new Date(properties.uploadTimestamp)
+    : new Date(getAttribute("Upload Date") || Date.now());
+  const downloads = properties.downloadCount || getAttribute("Downloads") || 0;
+  const likes = Math.floor((getAttribute("Points Balance") || 0) / 10);
+  const isVerified = qualityTier === 2;
   const size = properties.size || "Unknown";
   const format = properties.format || "PyTorch";
-  const license = properties.license || "MIT";
+  const license = properties.license || getAttribute("License") || "MIT";
   const framework = properties.framework || "transformers";
-  const tags = properties.tags || ["blockchain", "decentralized", "ai-model"];
-  const rating =
-    metadata.qualityTier === 2
-      ? 4.8
-      : metadata.qualityTier === 1
-      ? 4.2
-      : 3.5;
+  const tags = properties.tags ||
+    getAttribute("Tags")?.split(", ") || [
+      "blockchain",
+      "decentralized",
+      "ai-model",
+    ];
+  const rating = qualityTier === 2 ? 4.8 : qualityTier === 1 ? 4.2 : 3.5;
   const nftValue =
-    metadata.qualityTier === 2
-      ? "2.4 ETH"
-      : metadata.qualityTier === 1
-      ? "1.2 ETH"
-      : "0.5 ETH";
+    qualityTier === 2 ? "2.4 ETH" : qualityTier === 1 ? "1.2 ETH" : "0.5 ETH";
+  const ipfsHash = properties.ipfsHash;
 
-  // Mock files data
+  // Mock files data (adjust based on metadata if available)
   const files = [
     { name: "model.bin", size: size, type: "Model Weights" },
     { name: "config.json", size: "2 KB", type: "Configuration" },
@@ -219,7 +222,7 @@ print(outputs)`;
   const dehugCode = `from dehug import DeHugRepository
 
 # Load model from decentralized storage
-model = DeHugRepository.load_model("${metadata.ipfsHash}")
+model = DeHugRepository.load_model("${ipfsHash}")
 
 # Use the model
 output = model.predict("Hello world")
@@ -295,10 +298,10 @@ print(output)`;
               </Button>
               <DownloadButton
                 itemName={title}
-                ipfsHash={metadata.ipfsHash}
+                ipfsHash={ipfsHash}
                 className="bg-white text-black hover:bg-slate-100 font-medium"
                 onDownloadComplete={() => {
-                  console.log("Download completed successfully");
+                  toast.info("Download completed successfully");
                 }}
               />
               <Link href={`/models/${params.id}/playground`}>
@@ -501,7 +504,7 @@ print(output)`;
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {tags.map((tag) => (
+                      {tags.map((tag: string) => (
                         <Badge
                           key={tag}
                           variant="outline"
@@ -535,8 +538,12 @@ print(output)`;
                       </div>
                       <div className="text-xs text-slate-500 font-light">
                         <p>
-                          Wallet: {metadata.uploader?.slice(0, 6)}...
-                          {metadata.uploader?.slice(-4)}
+                          Wallet:{" "}
+                          {properties.uploader?.slice(0, 6) ||
+                            getAttribute("Uploader")?.slice(0, 6)}
+                          ...
+                          {properties.uploader?.slice(-4) ||
+                            getAttribute("Uploader")?.slice(-4)}
                         </p>
                       </div>
                       <Button
@@ -567,7 +574,7 @@ print(output)`;
                     <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">IPFS Hash:</span>
                       <code className="text-xs text-slate-300">
-                        {metadata?.ipfsHash?.slice(0, 8)}...
+                        {ipfsHash?.slice(0, 8)}...
                       </code>
                     </div>
                     <div className="flex justify-between text-sm font-light">
@@ -751,7 +758,7 @@ pip install dehug`}</code>
                         </Button>
                         <DownloadButton
                           itemName={`${title}/${file.name}`}
-                          ipfsHash={metadata.ipfsHash}
+                          ipfsHash={ipfsHash}
                           size="sm"
                           className="bg-white text-black hover:bg-slate-100 font-medium"
                         />
@@ -882,8 +889,11 @@ pip install dehug`}</code>
                       Owner:
                     </span>
                     <p className="text-white font-mono text-xs">
-                      {metadata.uploader?.slice(0, 6)}...
-                      {metadata.uploader?.slice(-4)}
+                      {properties.uploader?.slice(0, 6) ||
+                        getAttribute("Uploader")?.slice(0, 6)}
+                      ...
+                      {properties.uploader?.slice(-4) ||
+                        getAttribute("Uploader")?.slice(-4)}
                     </p>
                   </div>
                 </CardContent>
