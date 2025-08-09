@@ -129,6 +129,3 @@ export const useIPFS = () => {
 };
 
 export default useIPFS;
-
-// bafkreicspnlkp5r5sx4spzlvys6lbj4oiauwl4n22o7hncajtpcvuw6yfe
-// https://aqua-charming-crow-34.mypinata.cloud/ipfs/bafkreicspnlkp5r5sx4spzlvys6lbj4oiauwl4n22o7hncajtpcvuw6yfe

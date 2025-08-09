@@ -12,6 +12,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { Upload, FileText, Database, AlertCircle, CheckCircle, X, Brain, Coins, Zap, Trophy } from 'lucide-react'
 import { useDropzone } from "react-dropzone"
+import { ethers } from 'ethers'
+import useIPFS from '@/hooks/useIPFS'
+
+// Static NFT image
+const STATIC_NFT_IMAGE = "https://aqua-charming-crow-34.mypinata.cloud/ipfs/bafkreicspnlkp5r5sx4spzlvys6lbj4oiauwl4n22o7hncajtpcvuw6yfe"
 
 const modelCategories = [
   "Natural Language Processing",
@@ -42,13 +47,90 @@ const licenses = [
   { value: "custom", label: "Custom License" }
 ]
 
+// NFT Metadata interface
+interface NFTMetadata {
+  name: string;
+  description: string;
+  image: string;
+  external_url?: string;
+  attributes: Array<{
+    trait_type: string;
+    value: string | number;
+  }>;
+  properties: {
+    contentType: 'MODEL' | 'DATASET';
+    ipfsHash: string;
+    downloadCount: number;
+    uploadTimestamp: number;
+    tags: string[];
+    uploader: string;
+  };
+}
+
+// Create NFT metadata function
+function createNFTMetadata(
+  title: string,
+  description: string,
+  contentType: 'MODEL' | 'DATASET',
+  ipfsHash: string,
+  tags: string[],
+  uploader: string
+): NFTMetadata {
+  return {
+    name: title,
+    description: description,
+    image: STATIC_NFT_IMAGE,
+    external_url: `https://your-dehug-app.vercel.app/content/${ipfsHash}`,
+    attributes: [
+      { trait_type: "Content Type", value: contentType },
+      { trait_type: "Points Balance", value: 0 },
+      { trait_type: "Downloads", value: 0 }, 
+      { trait_type: "Quality Tier", value: "BASIC" },
+      { trait_type: "Upload Date", value: new Date().toISOString().split('T')[0] },
+      { trait_type: "Tags", value: tags.join(', ') },
+      { trait_type: "Uploader", value: uploader.slice(0, 10) + '...' }
+    ],
+    properties: {
+      contentType,
+      ipfsHash,
+      downloadCount: 0,
+      uploadTimestamp: Date.now(),
+      tags,
+      uploader
+    }
+  };
+}
+
+interface UploadResult {
+  tokenId: string;
+  mainFileHash: string;
+  mainFileUrl: string;
+  metadataHash: string;
+  metadataUrl: string;
+  ipfsUrls: {
+    mainFile: string;
+    metadata: string;
+    image: string;
+  };
+}
+
+interface UploadProgressState {
+  stage: 'idle' | 'uploading-files' | 'creating-metadata' | 'uploading-metadata' | 'minting-nft' | 'complete';
+  progress: number;
+  message: string;
+}
+
 export default function UploadPage() {
   const [uploadType, setUploadType] = useState<"model" | "dataset">("model")
   const [files, setFiles] = useState<File[]>([])
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadProgressState, setUploadProgressState] = useState<UploadProgressState>({
+    stage: 'idle',
+    progress: 0,
+    message: ''
+  })
   const [isUploading, setIsUploading] = useState(false)
   const [uploadComplete, setUploadComplete] = useState(false)
-  const [nftDetails, setNftDetails] = useState<any>(null)
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -62,6 +144,9 @@ export default function UploadPage() {
     homepage: "",
     repository: ""
   })
+
+  // IPFS Hook
+  const { uploadToIPFS, getIPFSHash } = useIPFS()
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(prev => [...prev, ...acceptedFiles])
@@ -81,7 +166,7 @@ export default function UploadPage() {
       'application/zip': ['.zip'],
       'text/plain': ['.txt']
     },
-    maxSize: uploadType === "model" ? 10 * 1024 * 1024 * 1024 : 50 * 1024 * 1024 * 1024 // 10GB for models, 50GB for datasets
+    maxSize: uploadType === "model" ? 10 * 1024 * 1024 * 1024 : 50 * 1024 * 1024 * 1024
   })
 
   const removeFile = (index: number) => {
@@ -92,30 +177,157 @@ export default function UploadPage() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  // Main upload function with IPFS integration
+  const uploadContentComplete = async (
+    file: File,
+    title: string,
+    description: string,
+    contentType: 'MODEL' | 'DATASET',
+    tags: string[],
+    userAddress: string,
+    contract?: ethers.Contract // Optional for now
+  ): Promise<UploadResult> => {
+    try {
+      // Stage 1: Upload main file to IPFS
+      setUploadProgressState({
+        stage: 'uploading-files',
+        progress: 20,
+        message: 'Uploading files to IPFS...'
+      })
+      
+      console.log('Step 1: Uploading main file to IPFS...')
+      const mainFileUrl = await uploadToIPFS(file)
+      const mainFileHash = getIPFSHash(mainFileUrl)
+      console.log(`Main file uploaded: ${mainFileHash}`)
+      
+      // Stage 2: Create NFT metadata
+      setUploadProgressState({
+        stage: 'creating-metadata',
+        progress: 50,
+        message: 'Creating NFT metadata...'
+      })
+      
+      console.log('Step 2: Creating NFT metadata...')
+      const nftMetadata = createNFTMetadata(
+        title,
+        description,
+        contentType,
+        mainFileHash,
+        tags,
+        userAddress
+      )
+      
+      // Stage 3: Upload metadata to IPFS
+      setUploadProgressState({
+        stage: 'uploading-metadata',
+        progress: 70,
+        message: 'Uploading metadata to IPFS...'
+      })
+      
+      console.log('Step 3: Uploading metadata to IPFS...')
+      const metadataUrl = await uploadToIPFS(nftMetadata)
+      const metadataHash = getIPFSHash(metadataUrl)
+      console.log(`Metadata uploaded: ${metadataHash}`)
+      
+      // Stage 4: Mint NFT (if contract is available)
+      setUploadProgressState({
+        stage: 'minting-nft',
+        progress: 90,
+        message: 'Minting NFT on blockchain...'
+      })
+      
+      let tokenId = 'pending'
+      
+      if (contract) {
+        console.log('Step 4: Minting NFT on blockchain...')
+        const tx = await contract.uploadContent(
+          contentType === 'MODEL' ? 1 : 0,
+          mainFileHash,
+          metadataHash,
+          'static',
+          title,
+          description,
+          tags
+        )
+        
+        const receipt = await tx.wait()
+        tokenId = receipt.events?.find((e: any) => e.event === 'ContentUploaded')?.args?.tokenId?.toString() || 'unknown'
+        console.log(`Upload complete! Token ID: ${tokenId}`)
+      } else {
+        // For demo purposes, generate a mock token ID
+        tokenId = '0x' + Math.random().toString(16).substr(2, 8)
+        console.log('Demo mode: Generated mock token ID:', tokenId)
+      }
+      
+      setUploadProgressState({
+        stage: 'complete',
+        progress: 100,
+        message: 'Upload complete!'
+      })
+      
+      return {
+        tokenId,
+        mainFileHash,
+        mainFileUrl,
+        metadataHash,
+        metadataUrl,
+        ipfsUrls: {
+          mainFile: mainFileUrl,
+          metadata: metadataUrl,
+          image: STATIC_NFT_IMAGE
+        }
+      }
+      
+    } catch (error) {
+      console.error('Upload failed:', error)
+      throw error
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (files.length === 0) return
+    
     setIsUploading(true)
-    setUploadProgress(0)
+    setUploadProgressState({
+      stage: 'uploading-files',
+      progress: 0,
+      message: 'Starting upload...'
+    })
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setIsUploading(false)
-          setUploadComplete(true)
-          // Simulate NFT minting
-          setNftDetails({
-            tokenId: "0x" + Math.random().toString(16).substr(2, 8),
-            initialValue: "0.1 ETH",
-            contractAddress: "0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4",
-            ipfsHash: "Qm" + Math.random().toString(36).substr(2, 44)
-          })
-          return 100
-        }
-        return prev + Math.random() * 15
+    try {
+      // For demo, use a mock address if wallet not connected
+      const userAddress = '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4' // Replace with actual wallet address
+      
+      // Parse tags
+      const tags = formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+      
+      // Upload the first file (in real implementation, you might want to zip multiple files)
+      const result = await uploadContentComplete(
+        files[0],
+        formData.title,
+        formData.description,
+        uploadType.toUpperCase() as 'MODEL' | 'DATASET',
+        tags,
+        userAddress
+        // contract would be passed here when available
+      )
+      
+      setUploadResult(result)
+      setUploadComplete(true)
+      
+    } catch (error) {
+      console.error('Upload error:', error)
+      // Reset upload state on error
+      setUploadProgressState({
+        stage: 'idle',
+        progress: 0,
+        message: 'Upload failed. Please try again.'
       })
-    }, 800)
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const formatFileSize = (bytes: number) => {
@@ -126,7 +338,31 @@ export default function UploadPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  if (uploadComplete) {
+  const resetUpload = () => {
+    setUploadComplete(false)
+    setFiles([])
+    setUploadResult(null)
+    setUploadProgressState({
+      stage: 'idle',
+      progress: 0,
+      message: ''
+    })
+    setFormData({
+      title: "",
+      description: "",
+      category: "",
+      tags: "",
+      license: "",
+      customLicense: "",
+      isPublic: true,
+      allowCommercial: true,
+      author: "",
+      homepage: "",
+      repository: ""
+    })
+  }
+
+  if (uploadComplete && uploadResult) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
         <div className="relative z-10 max-w-3xl mx-auto text-center px-6">
@@ -152,19 +388,40 @@ export default function UploadPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
               <div>
                 <span className="text-slate-400 font-light">Token ID:</span>
-                <p className="text-white font-mono">{nftDetails?.tokenId}</p>
+                <p className="text-white font-mono">{uploadResult.tokenId}</p>
               </div>
               <div>
                 <span className="text-slate-400 font-light">Initial Value:</span>
-                <p className="text-amber-400 font-medium">{nftDetails?.initialValue}</p>
+                <p className="text-amber-400 font-medium">0.1 ETH</p>
               </div>
               <div>
-                <span className="text-slate-400 font-light">Contract:</span>
-                <p className="text-white font-mono text-xs">{nftDetails?.contractAddress}</p>
+                <span className="text-slate-400 font-light">Main File IPFS:</span>
+                <p className="text-white font-mono text-xs">{uploadResult.mainFileHash}</p>
               </div>
               <div>
-                <span className="text-slate-400 font-light">IPFS Hash:</span>
-                <p className="text-white font-mono text-xs">{nftDetails?.ipfsHash}</p>
+                <span className="text-slate-400 font-light">Metadata IPFS:</span>
+                <p className="text-white font-mono text-xs">{uploadResult.metadataHash}</p>
+              </div>
+            </div>
+            <div className="mt-6 pt-6 border-t border-slate-700">
+              <span className="text-slate-400 font-light">IPFS URLs:</span>
+              <div className="mt-2 space-y-2">
+                <a 
+                  href={uploadResult.mainFileUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block text-blue-400 hover:text-blue-300 text-xs font-mono"
+                >
+                  📄 Main File: {uploadResult.mainFileUrl}
+                </a>
+                <a 
+                  href={uploadResult.metadataUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block text-blue-400 hover:text-blue-300 text-xs font-mono"
+                >
+                  📋 Metadata: {uploadResult.metadataUrl}
+                </a>
               </div>
             </div>
           </div>
@@ -180,24 +437,7 @@ export default function UploadPage() {
             <Button 
               variant="outline" 
               size="lg" 
-              onClick={() => {
-                setUploadComplete(false)
-                setFiles([])
-                setNftDetails(null)
-                setFormData({
-                  title: "",
-                  description: "",
-                  category: "",
-                  tags: "",
-                  license: "",
-                  customLicense: "",
-                  isPublic: true,
-                  allowCommercial: true,
-                  author: "",
-                  homepage: "",
-                  repository: ""
-                })
-              }}
+              onClick={resetUpload}
               className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600 px-12 py-4 text-lg font-light"
             >
               Upload Another {uploadType === 'model' ? 'Model' : 'Dataset'}
@@ -564,22 +804,42 @@ export default function UploadPage() {
                 <CardContent className="pt-8">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-light text-white">Uploading to IPFS & Minting NFT...</span>
-                      <span className="text-slate-400">{Math.round(uploadProgress)}%</span>
+                      <span className="text-lg font-light text-white">{uploadProgressState.message}</span>
+                      <span className="text-slate-400">{Math.round(uploadProgressState.progress)}%</span>
                     </div>
-                    <Progress value={uploadProgress} className="w-full h-3" />
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div className={`flex items-center ${uploadProgress > 30 ? 'text-green-400' : 'text-slate-400'}`}>
+                    <Progress value={uploadProgressState.progress} className="w-full h-3" />
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                      <div className={`flex items-center ${
+                        uploadProgressState.stage === 'uploading-files' || uploadProgressState.progress > 20 
+                          ? 'text-green-400' 
+                          : 'text-slate-400'
+                      }`}>
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Uploading files to IPFS
+                        Uploading to IPFS
                       </div>
-                      <div className={`flex items-center ${uploadProgress > 70 ? 'text-green-400' : 'text-slate-400'}`}>
+                      <div className={`flex items-center ${
+                        uploadProgressState.stage === 'creating-metadata' || uploadProgressState.progress > 50 
+                          ? 'text-green-400' 
+                          : 'text-slate-400'
+                      }`}>
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Storing metadata on-chain
+                        Creating metadata
                       </div>
-                      <div className={`flex items-center ${uploadProgress > 95 ? 'text-green-400' : 'text-slate-400'}`}>
+                      <div className={`flex items-center ${
+                        uploadProgressState.stage === 'uploading-metadata' || uploadProgressState.progress > 70 
+                          ? 'text-green-400' 
+                          : 'text-slate-400'
+                      }`}>
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Minting NFT reward
+                        Storing metadata
+                      </div>
+                      <div className={`flex items-center ${
+                        uploadProgressState.stage === 'minting-nft' || uploadProgressState.progress > 90 
+                          ? 'text-green-400' 
+                          : 'text-slate-400'
+                      }`}>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Minting NFT
                       </div>
                     </div>
                   </div>
