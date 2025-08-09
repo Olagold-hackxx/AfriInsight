@@ -133,7 +133,7 @@ export function Header() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <div className="flex relative lg:left-16 items-end justify-end">
+        <div className="flex relative md:left-16 lg:left-24 items-center justify-end">
           {/* <Button 
             variant="outline" 
             size="sm" 
@@ -142,6 +142,7 @@ export function Header() {
             <Wallet className="h-4 w-4 mr-2" />
             Connect Wallet
           </Button> */}
+  
           <ConnectWallet />
 
           {/* Mobile Navigation */}

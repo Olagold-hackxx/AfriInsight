@@ -56,7 +56,7 @@ const ConnectWallet = ({ onConnect, label = "Connect Wallet" }: ConnectWalletPro
   if (!mounted) return null;
 
   return (
-    <div>
+    <div className="flex justify-end self-end">
       <div className="hidden md:flex">
         <ConnectButton 
           client={thirdwebClient}
