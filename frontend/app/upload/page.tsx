@@ -66,17 +66,20 @@ interface NFTMetadata {
     uploadTimestamp: number;
     tags: string[];
     uploader: string;
+    category?: string;
+    license?: string;
+    author?: string;
+    homepage?: string;
+    repository?: string;
   };
 }
 
-// Parameters for uploadContent contract call
 interface UploadContentParams {
   contentType: 0 | 1; // 0 for DATASET, 1 for MODEL
   ipfsHash: string;
   metadataIPFSHash: string;
   imageIPFSHash: string;
   title: string;
-  description: string;
   tags: string[];
 }
 
@@ -108,14 +111,20 @@ interface UploadProgressState {
   message: string;
 }
 
-// Create NFT metadata function
 function createNFTMetadata(
   title: string,
   description: string,
   contentType: 'MODEL' | 'DATASET',
   ipfsHash: string,
   tags: string[],
-  uploader: string
+  uploader: string,
+  additionalData?: {
+    category?: string;
+    license?: string;
+    author?: string;
+    homepage?: string;
+    repository?: string;
+  }
 ): NFTMetadata {
   return {
     name: title,
@@ -129,7 +138,10 @@ function createNFTMetadata(
       { trait_type: "Quality Tier", value: "BASIC" },
       { trait_type: "Upload Date", value: new Date().toISOString().split('T')[0] },
       { trait_type: "Tags", value: tags.join(', ') },
-      { trait_type: "Uploader", value: uploader.slice(0, 10) + '...' }
+      { trait_type: "Uploader", value: uploader.slice(0, 10) + '...' },
+      ...(additionalData?.category ? [{ trait_type: "Category", value: additionalData.category }] : []),
+      ...(additionalData?.license ? [{ trait_type: "License", value: additionalData.license }] : []),
+      ...(additionalData?.author ? [{ trait_type: "Author", value: additionalData.author }] : []),
     ],
     properties: {
       contentType,
@@ -137,7 +149,8 @@ function createNFTMetadata(
       downloadCount: 0,
       uploadTimestamp: Date.now(),
       tags,
-      uploader
+      uploader,
+      ...additionalData
     }
   };
 }
@@ -208,7 +221,14 @@ export default function UploadPage() {
     description: string,
     contentType: 'MODEL' | 'DATASET',
     tags: string[],
-    userAddress: string
+    userAddress: string,
+    additionalData?: {
+      category?: string;
+      license?: string;
+      author?: string;
+      homepage?: string;
+      repository?: string;
+    }
   ): Promise<UploadPreparationResult> => {
     try {
       // Stage 1: Upload main file to IPFS
@@ -222,7 +242,7 @@ export default function UploadPage() {
       const mainFileHash = getIPFSHash(mainFileUrl)
       console.log(`Main file uploaded: ${mainFileHash}`)
 
-      // Stage 2: Create NFT metadata
+      // Stage 2: Create NFT metadata (with description and additional data)
       setUploadProgressState({
         stage: 'creating-metadata',
         progress: 50,
@@ -235,7 +255,8 @@ export default function UploadPage() {
         contentType,
         mainFileHash,
         tags,
-        userAddress
+        userAddress,
+        additionalData
       )
 
       // Stage 3: Upload metadata to IPFS
@@ -249,15 +270,14 @@ export default function UploadPage() {
       const metadataHash = getIPFSHash(metadataUrl)
       console.log(`Metadata uploaded: ${metadataHash}`)
 
-      // Prepare parameters for contract call
+      // Prepare parameters for contract call (description removed)
       const params: UploadContentParams = {
         contentType: contentType === 'MODEL' ? 1 : 0,
         ipfsHash: mainFileHash,
         metadataIPFSHash: metadataHash,
         imageIPFSHash: STATIC_IMAGE_HASH,
         title,
-        description,
-        tags
+        tags // description removed from contract call
       }
 
       return {
@@ -293,14 +313,24 @@ export default function UploadPage() {
 
       const tags = formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
 
+      // Prepare additional metadata to store in IPFS
+      const additionalData = {
+        category: formData.category,
+        license: formData.license === 'custom' ? formData.customLicense : formData.license,
+        author: formData.author,
+        homepage: formData.homepage,
+        repository: formData.repository
+      }
+
       // Step 1-3: Upload to IPFS and prepare metadata
       const preparationResult = await uploadContentComplete(
         files[0],
         formData.title,
-        formData.description,
+        formData.description, // Description goes to IPFS metadata, not contract
         uploadType.toUpperCase() as 'MODEL' | 'DATASET',
         tags,
-        userAddress
+        userAddress,
+        additionalData
       )
 
       // Step 4: Mint NFT using the contract via useUploadContent hook
@@ -613,7 +643,8 @@ export default function UploadPage() {
                   {uploadType === 'model' ? 'Model' : 'Dataset'} Information
                 </CardTitle>
                 <CardDescription className="text-slate-400 font-light">
-                  Provide details to help others discover and understand your {uploadType}.
+                  Provide details to help others discover and understand your {uploadType}. 
+                  <span className="text-amber-400"> Description and metadata are stored on IPFS for richer content.</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
@@ -647,7 +678,10 @@ export default function UploadPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="description" className="text-white font-light">Description *</Label>
+                  <Label htmlFor="description" className="text-white font-light">
+                    Description * 
+                    <span className="text-amber-400 text-sm ml-2">(Stored on IPFS)</span>
+                  </Label>
                   <Textarea
                     id="description"
                     placeholder={`Describe your ${uploadType}, its capabilities, training details, and potential use cases...`}

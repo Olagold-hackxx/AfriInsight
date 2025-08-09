@@ -6,7 +6,7 @@ import { useChainId, useAccount } from "../../lib/thirdweb-hooks";
 import { useRouter } from "next/navigation";
 import { useChainSwitch } from "../useChainSwitch";
 import { useActiveAccount } from "thirdweb/react";
-import { getContract, prepareContractCall, sendTransaction, waitForReceipt, getContractEvents, prepareEvent, readContract } from "thirdweb";
+import { getContract, prepareContractCall, sendTransaction, waitForReceipt, readContract } from "thirdweb";
 import { thirdwebClient } from "@/app/client";
 import { filecoinCalibrationTestnet } from "@/constants/chain";
 
@@ -21,7 +21,6 @@ interface UploadContentParams {
   metadataIPFSHash: string;
   imageIPFSHash: string;
   title: string;
-  description: string;
   tags: string[];
 }
 
@@ -38,8 +37,7 @@ const useUploadContent = () => {
   const router = useRouter();
   const { ensureCorrectChain } = useChainSwitch();
 
-  return useCallback(
-    async (params: UploadContentParams): Promise<UploadContentResult> => {
+  return useCallback(async (params: UploadContentParams): Promise<UploadContentResult> => {
       if (!account) {
         toast.warning("Please connect your wallet first.");
         return { success: false };
@@ -69,17 +67,16 @@ const useUploadContent = () => {
           address: process.env.DEHUG_ADDRESS as string,
         });
 
-        // Prepare the contract call for uploadContent
+        // Prepare the contract call for uploadContent (removed description parameter)
         const transaction = prepareContractCall({
           contract,
-          method: "function uploadContent(uint8 _contentType, string _ipfsHash, string _metadataIPFSHash, string _imageIPFSHash, string _title, string _description, string[] _tags) returns (uint256)",
+          method: "function uploadContent(uint8 _contentType, string _ipfsHash, string _metadataIPFSHash, string _imageIPFSHash, string _title, string[] _tags) returns (uint256)",
           params: [
             params.contentType,
             params.ipfsHash,
             params.metadataIPFSHash,
             params.imageIPFSHash,
             params.title,
-            params.description,
             params.tags,
           ],
         });
@@ -99,61 +96,15 @@ const useUploadContent = () => {
           transactionHash: result.transactionHash,
         });
 
-        // Prepare the ContentUploaded event
-        const contentUploadedEvent = prepareEvent({
-          signature: "event ContentUploaded(uint256 indexed tokenId, address indexed uploader, uint8 contentType, string ipfsHash, string title)",
-        });
-
-        // Fetch the ContentUploaded event
-        const events = await getContractEvents({
+        // Get the token ID using getLatestTokenId (much cleaner than parsing events)
+        const tokenId = await readContract({
           contract,
-          events: [contentUploadedEvent],
-          fromBlock: receipt.blockNumber,
-          toBlock: receipt.blockNumber,
+          method: "function getLatestTokenId() view returns (uint256)",
+          params: [],
         });
-
-        let tokenId: string | null = null;
-        for (const event of events) {
-          if (event.eventName === "ContentUploaded") {
-            tokenId = event.args.tokenId.toString();
-            break;
-          }
-        }
 
         if (!tokenId) {
-          throw new Error("Failed to retrieve token ID from ContentUploaded event");
-        }
-
-        // Verify the tokenId using ipfsHashToTokenId mapping with retries
-        let mappingTokenId: string | null = null;
-        const maxRetries = 3;
-        let retryCount = 0;
-
-        while (retryCount < maxRetries) {
-          try {
-            const result = await readContract({
-              contract,
-              method: "function ipfsHashToTokenId(string) view returns (uint256)",
-              params: [params.ipfsHash],
-            });
-            mappingTokenId = result.toString();
-            if (mappingTokenId !== "0") {
-              break;
-            }
-          } catch (error) {
-            console.warn(`Retry ${retryCount + 1}: Failed to read ipfsHashToTokenId`, error);
-          }
-          retryCount++;
-          if (retryCount < maxRetries) {
-            // Wait 2 seconds before retrying
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-          }
-        }
-
-        if (!mappingTokenId || mappingTokenId === "0") {
-          console.warn("ipfsHashToTokenId mapping returned 0, relying on event tokenId");
-        } else if (mappingTokenId !== tokenId) {
-          throw new Error("Token ID mismatch between event and ipfsHashToTokenId mapping");
+          throw new Error("Failed to retrieve token ID");
         }
 
         toast.success("Content uploaded successfully!");
@@ -161,7 +112,7 @@ const useUploadContent = () => {
         return {
           success: true,
           transactionHash: result.transactionHash as `0x${string}`,
-          tokenId,
+          tokenId: tokenId.toString(),
         };
       } catch (error) {
         const err = error as ErrorWithReason;

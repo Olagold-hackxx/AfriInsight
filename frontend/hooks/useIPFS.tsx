@@ -63,10 +63,7 @@ export const useIPFS = () => {
     try {
       // Multiple gateway fallback strategy
       const gateways = [
-        'https://ipfs.io/ipfs/',
         'https://gateway.pinata.cloud/ipfs/',
-        'https://cloudflare-ipfs.com/ipfs/',
-        'https://dweb.link/ipfs/'
       ];
 
       // Extract IPFS hash from any gateway URL
