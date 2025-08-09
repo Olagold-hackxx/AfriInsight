@@ -35,9 +35,17 @@ export function DownloadButton({
       setDownloadStatus('downloading')
       onDownloadStart?.()
 
-      // Track and initiate download from Filecoin
-      await DeHugAPI.downloadFromFilecoin(itemName, ipfsHash, 'ui')
-      
+      // Get the download URL and track the download
+      const downloadUrl = await DeHugAPI.downloadFromFilecoin(itemName, ipfsHash, 'ui')
+
+      // Create a temporary anchor for download
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = `${itemName}.zip` // Adjust extension as needed
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
       setDownloadStatus('success')
       onDownloadComplete?.()
       

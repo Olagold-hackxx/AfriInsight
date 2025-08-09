@@ -12,11 +12,13 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { Upload, FileText, Database, AlertCircle, CheckCircle, X, Brain, Coins, Zap, Trophy } from 'lucide-react'
 import { useDropzone } from "react-dropzone"
-import { ethers } from 'ethers'
 import useIPFS from '@/hooks/useIPFS'
+import useUploadContent from '../../hooks/DeHug/useUploadContent'
+import { useActiveAccount } from "thirdweb/react"
 
 // Static NFT image
 const STATIC_NFT_IMAGE = "https://aqua-charming-crow-34.mypinata.cloud/ipfs/bafkreicspnlkp5r5sx4spzlvys6lbj4oiauwl4n22o7hncajtpcvuw6yfe"
+const STATIC_IMAGE_HASH = "bafkreicspnlkp5r5sx4spzlvys6lbj4oiauwl4n22o7hncajtpcvuw6yfe"
 
 const modelCategories = [
   "Natural Language Processing",
@@ -67,6 +69,45 @@ interface NFTMetadata {
   };
 }
 
+// Parameters for uploadContent contract call
+interface UploadContentParams {
+  contentType: 0 | 1; // 0 for DATASET, 1 for MODEL
+  ipfsHash: string;
+  metadataIPFSHash: string;
+  imageIPFSHash: string;
+  title: string;
+  description: string;
+  tags: string[];
+}
+
+// Upload preparation result
+interface UploadPreparationResult {
+  mainFileHash: string;
+  mainFileUrl: string;
+  metadataHash: string;
+  metadataUrl: string;
+  params: UploadContentParams;
+}
+
+interface UploadResult {
+  tokenId: string;
+  mainFileHash: string;
+  mainFileUrl: string;
+  metadataHash: string;
+  metadataUrl: string;
+  ipfsUrls: {
+    mainFile: string;
+    metadata: string;
+    image: string;
+  };
+}
+
+interface UploadProgressState {
+  stage: 'idle' | 'uploading-files' | 'creating-metadata' | 'uploading-metadata' | 'minting-nft' | 'complete';
+  progress: number;
+  message: string;
+}
+
 // Create NFT metadata function
 function createNFTMetadata(
   title: string,
@@ -101,25 +142,6 @@ function createNFTMetadata(
   };
 }
 
-interface UploadResult {
-  tokenId: string;
-  mainFileHash: string;
-  mainFileUrl: string;
-  metadataHash: string;
-  metadataUrl: string;
-  ipfsUrls: {
-    mainFile: string;
-    metadata: string;
-    image: string;
-  };
-}
-
-interface UploadProgressState {
-  stage: 'idle' | 'uploading-files' | 'creating-metadata' | 'uploading-metadata' | 'minting-nft' | 'complete';
-  progress: number;
-  message: string;
-}
-
 export default function UploadPage() {
   const [uploadType, setUploadType] = useState<"model" | "dataset">("model")
   const [files, setFiles] = useState<File[]>([])
@@ -145,8 +167,10 @@ export default function UploadPage() {
     repository: ""
   })
 
-  // IPFS Hook
+  // Hooks
   const { uploadToIPFS, getIPFSHash } = useIPFS()
+  const uploadContent = useUploadContent()
+  const account = useActiveAccount()
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(prev => [...prev, ...acceptedFiles])
@@ -177,16 +201,15 @@ export default function UploadPage() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  // Main upload function with IPFS integration
+  // Upload preparation function
   const uploadContentComplete = async (
     file: File,
     title: string,
     description: string,
     contentType: 'MODEL' | 'DATASET',
     tags: string[],
-    userAddress: string,
-    contract?: ethers.Contract // Optional for now
-  ): Promise<UploadResult> => {
+    userAddress: string
+  ): Promise<UploadPreparationResult> => {
     try {
       // Stage 1: Upload main file to IPFS
       setUploadProgressState({
@@ -194,19 +217,17 @@ export default function UploadPage() {
         progress: 20,
         message: 'Uploading files to IPFS...'
       })
-      
       console.log('Step 1: Uploading main file to IPFS...')
       const mainFileUrl = await uploadToIPFS(file)
       const mainFileHash = getIPFSHash(mainFileUrl)
       console.log(`Main file uploaded: ${mainFileHash}`)
-      
+
       // Stage 2: Create NFT metadata
       setUploadProgressState({
         stage: 'creating-metadata',
         progress: 50,
         message: 'Creating NFT metadata...'
       })
-      
       console.log('Step 2: Creating NFT metadata...')
       const nftMetadata = createNFTMetadata(
         title,
@@ -216,79 +237,47 @@ export default function UploadPage() {
         tags,
         userAddress
       )
-      
+
       // Stage 3: Upload metadata to IPFS
       setUploadProgressState({
         stage: 'uploading-metadata',
         progress: 70,
         message: 'Uploading metadata to IPFS...'
       })
-      
       console.log('Step 3: Uploading metadata to IPFS...')
       const metadataUrl = await uploadToIPFS(nftMetadata)
       const metadataHash = getIPFSHash(metadataUrl)
       console.log(`Metadata uploaded: ${metadataHash}`)
-      
-      // Stage 4: Mint NFT (if contract is available)
-      setUploadProgressState({
-        stage: 'minting-nft',
-        progress: 90,
-        message: 'Minting NFT on blockchain...'
-      })
-      
-      let tokenId = 'pending'
-      
-      if (contract) {
-        console.log('Step 4: Minting NFT on blockchain...')
-        const tx = await contract.uploadContent(
-          contentType === 'MODEL' ? 1 : 0,
-          mainFileHash,
-          metadataHash,
-          'static',
-          title,
-          description,
-          tags
-        )
-        
-        const receipt = await tx.wait()
-        tokenId = receipt.events?.find((e: any) => e.event === 'ContentUploaded')?.args?.tokenId?.toString() || 'unknown'
-        console.log(`Upload complete! Token ID: ${tokenId}`)
-      } else {
-        // For demo purposes, generate a mock token ID
-        tokenId = '0x' + Math.random().toString(16).substr(2, 8)
-        console.log('Demo mode: Generated mock token ID:', tokenId)
+
+      // Prepare parameters for contract call
+      const params: UploadContentParams = {
+        contentType: contentType === 'MODEL' ? 1 : 0,
+        ipfsHash: mainFileHash,
+        metadataIPFSHash: metadataHash,
+        imageIPFSHash: STATIC_IMAGE_HASH,
+        title,
+        description,
+        tags
       }
-      
-      setUploadProgressState({
-        stage: 'complete',
-        progress: 100,
-        message: 'Upload complete!'
-      })
-      
+
       return {
-        tokenId,
         mainFileHash,
         mainFileUrl,
         metadataHash,
         metadataUrl,
-        ipfsUrls: {
-          mainFile: mainFileUrl,
-          metadata: metadataUrl,
-          image: STATIC_NFT_IMAGE
-        }
+        params
       }
-      
     } catch (error) {
-      console.error('Upload failed:', error)
+      console.error('Upload preparation failed:', error)
       throw error
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (files.length === 0) return
-    
+
     setIsUploading(true)
     setUploadProgressState({
       stage: 'uploading-files',
@@ -297,29 +286,62 @@ export default function UploadPage() {
     })
 
     try {
-      // For demo, use a mock address if wallet not connected
-      const userAddress = '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4' // Replace with actual wallet address
-      
-      // Parse tags
+      const userAddress = account?.address
+      if (!userAddress) {
+        throw new Error('Wallet not connected')
+      }
+
       const tags = formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
-      
-      // Upload the first file (in real implementation, you might want to zip multiple files)
-      const result = await uploadContentComplete(
+
+      // Step 1-3: Upload to IPFS and prepare metadata
+      const preparationResult = await uploadContentComplete(
         files[0],
         formData.title,
         formData.description,
         uploadType.toUpperCase() as 'MODEL' | 'DATASET',
         tags,
         userAddress
-        // contract would be passed here when available
       )
-      
-      setUploadResult(result)
+
+      // Step 4: Mint NFT using the contract via useUploadContent hook
+      setUploadProgressState({
+        stage: 'minting-nft',
+        progress: 90,
+        message: 'Minting NFT on blockchain...'
+      })
+      console.log('Step 4: Minting NFT on blockchain...')
+      const uploadResult = await uploadContent(preparationResult.params)
+
+      if (!uploadResult || !uploadResult.success) {
+        throw new Error('Failed to mint NFT')
+      }
+
+      setUploadProgressState({
+        stage: 'complete',
+        progress: 100,
+        message: 'Upload complete!'
+      })
+      console.log(`Upload complete! Token ID: ${uploadResult.tokenId}`)
+
+      if (!uploadResult.tokenId) {
+        throw new Error('Token ID not returned from uploadContent')
+      }
+
+      setUploadResult({
+        tokenId: uploadResult.tokenId,
+        mainFileHash: preparationResult.mainFileHash,
+        mainFileUrl: preparationResult.mainFileUrl,
+        metadataHash: preparationResult.metadataHash,
+        metadataUrl: preparationResult.metadataUrl,
+        ipfsUrls: {
+          mainFile: preparationResult.mainFileUrl,
+          metadata: preparationResult.metadataUrl,
+          image: STATIC_NFT_IMAGE
+        }
+      })
       setUploadComplete(true)
-      
     } catch (error) {
       console.error('Upload error:', error)
-      // Reset upload state on error
       setUploadProgressState({
         stage: 'idle',
         progress: 0,
@@ -407,20 +429,20 @@ export default function UploadPage() {
               <span className="text-slate-400 font-light">IPFS URLs:</span>
               <div className="mt-2 space-y-2">
                 <a 
-                  href={uploadResult.mainFileUrl} 
+                  href={uploadResult.ipfsUrls.mainFile} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block text-blue-400 hover:text-blue-300 text-xs font-mono"
                 >
-                  📄 Main File: {uploadResult.mainFileUrl}
+                  📄 Main File: {uploadResult.ipfsUrls.mainFile}
                 </a>
                 <a 
-                  href={uploadResult.metadataUrl} 
+                  href={uploadResult.ipfsUrls.metadata} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block text-blue-400 hover:text-blue-300 text-xs font-mono"
                 >
-                  📋 Metadata: {uploadResult.metadataUrl}
+                  📋 Metadata: {uploadResult.ipfsUrls.metadata}
                 </a>
               </div>
             </div>
