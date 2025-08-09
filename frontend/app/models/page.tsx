@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter, Download, Eye, Calendar, User, BarChart3, Shield, Brain, Cpu, Zap, Star, Coins, TrendingUp } from 'lucide-react'
+import { Search, Filter, Eye, Calendar, User, Shield, Brain, Zap, Star, Coins, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { DownloadStatsComponent } from "@/components/ui/download-stats"
 
@@ -29,7 +29,7 @@ const mockModels = [
     license: "MIT",
     framework: "transformers",
     nftValue: "2.4 ETH",
-    trending: true
+    trending: true,
   },
   {
     id: "2",
@@ -48,7 +48,7 @@ const mockModels = [
     license: "Apache 2.0",
     framework: "pytorch",
     nftValue: "1.8 ETH",
-    trending: false
+    trending: false,
   },
   {
     id: "3",
@@ -67,7 +67,7 @@ const mockModels = [
     license: "MIT",
     framework: "transformers",
     nftValue: "3.2 ETH",
-    trending: true
+    trending: true,
   },
   {
     id: "4",
@@ -86,12 +86,26 @@ const mockModels = [
     license: "Apache 2.0",
     framework: "transformers",
     nftValue: "2.1 ETH",
-    trending: false
-  }
+    trending: false,
+  },
 ]
 
-const categories = ["All", "Natural Language Processing", "Computer Vision", "Audio", "Multimodal", "Reinforcement Learning"]
-const tasks = ["All", "Text Generation", "Image Classification", "Object Detection", "Speech Recognition", "Text Classification"]
+const categories = [
+  "All",
+  "Natural Language Processing",
+  "Computer Vision",
+  "Audio",
+  "Multimodal",
+  "Reinforcement Learning",
+]
+const tasks = [
+  "All",
+  "Text Generation",
+  "Image Classification",
+  "Object Detection",
+  "Speech Recognition",
+  "Text Classification",
+]
 
 export default function ModelsPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -99,10 +113,11 @@ export default function ModelsPage() {
   const [selectedTask, setSelectedTask] = useState("All")
   const [sortBy, setSortBy] = useState("trending")
 
-  const filteredModels = mockModels.filter(model => {
-    const matchesSearch = model.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         model.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         model.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredModels = mockModels.filter((model) => {
+    const matchesSearch =
+      model.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      model.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      model.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesCategory = selectedCategory === "All" || model.category === selectedCategory
     const matchesTask = selectedTask === "All" || model.task === selectedTask
     return matchesSearch && matchesCategory && matchesTask
@@ -115,7 +130,7 @@ export default function ModelsPage() {
       case "likes":
         return b.likes - a.likes
       case "nft-value":
-        return parseFloat(b.nftValue.replace(" ETH", "")) - parseFloat(a.nftValue.replace(" ETH", ""))
+        return Number.parseFloat(b.nftValue.replace(" ETH", "")) - Number.parseFloat(a.nftValue.replace(" ETH", ""))
       case "trending":
       default:
         return (b.trending ? 1 : 0) - (a.trending ? 1 : 0) || b.downloads - a.downloads
@@ -132,25 +147,21 @@ export default function ModelsPage() {
       <div className="relative z-10 container mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-16 text-center">
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className="mb-6 border-slate-600 text-slate-300 px-4 py-2 backdrop-blur-sm bg-slate-900/50"
           >
             <Brain className="w-4 h-4 mr-2" />
             Decentralized Model Hub
           </Badge>
           <h1 className="text-5xl md:text-7xl font-light mb-6 leading-none">
-            <span className="text-white">
-              Discover
-            </span>
+            <span className="text-white">Discover</span>
             <br />
-            <span className="text-slate-400 font-thin">
-              AI Models
-            </span>
+            <span className="text-slate-400 font-thin">AI Models</span>
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
-            Browse thousands of machine learning models hosted on decentralized infrastructure. 
-            Each model is backed by an NFT that appreciates with usage.
+            Browse thousands of machine learning models hosted on decentralized infrastructure. Each model is backed by
+            an NFT that appreciates with usage.
           </p>
         </div>
 
@@ -172,7 +183,7 @@ export default function ModelsPage() {
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent className="bg-slate-900 border-slate-700 text-white">
-                {categories.map(category => (
+                {categories.map((category) => (
                   <SelectItem key={category} value={category} className="focus:bg-slate-800">
                     {category}
                   </SelectItem>
@@ -184,17 +195,25 @@ export default function ModelsPage() {
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent className="bg-slate-900 border-slate-700 text-white">
-                <SelectItem value="trending" className="focus:bg-slate-800">Trending</SelectItem>
-                <SelectItem value="downloads" className="focus:bg-slate-800">Most Downloaded</SelectItem>
-                <SelectItem value="likes" className="focus:bg-slate-800">Most Liked</SelectItem>
-                <SelectItem value="nft-value" className="focus:bg-slate-800">NFT Value</SelectItem>
+                <SelectItem value="trending" className="focus:bg-slate-800">
+                  Trending
+                </SelectItem>
+                <SelectItem value="downloads" className="focus:bg-slate-800">
+                  Most Downloaded
+                </SelectItem>
+                <SelectItem value="likes" className="focus:bg-slate-800">
+                  Most Liked
+                </SelectItem>
+                <SelectItem value="nft-value" className="focus:bg-slate-800">
+                  NFT Value
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Category Pills */}
           <div className="flex flex-wrap gap-3">
-            {categories.map(category => (
+            {categories.map((category) => (
               <Button
                 key={category}
                 variant={selectedCategory === category ? "default" : "outline"}
@@ -202,8 +221,8 @@ export default function ModelsPage() {
                 onClick={() => setSelectedCategory(category)}
                 className={`text-sm transition-all duration-300 font-light ${
                   selectedCategory === category
-                    ? 'bg-white text-black hover:bg-slate-100'
-                    : 'bg-slate-900/30 border-slate-700 text-slate-300 hover:bg-slate-800/50 hover:border-slate-600'
+                    ? "bg-white text-black hover:bg-slate-100"
+                    : "bg-slate-900/30 border-slate-700 text-slate-300 hover:bg-slate-800/50 hover:border-slate-600"
                 }`}
               >
                 {category}
@@ -215,27 +234,25 @@ export default function ModelsPage() {
         {/* Results Count */}
         <div className="mb-8">
           <p className="text-slate-400 font-light">
-            Showing <span className="text-white font-medium">{sortedModels.length}</span> of <span className="text-white font-medium">{mockModels.length}</span> models
+            Showing <span className="text-white font-medium">{sortedModels.length}</span> of{" "}
+            <span className="text-white font-medium">{mockModels.length}</span> models
           </p>
         </div>
 
         {/* Models Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {sortedModels.map((model, index) => (
-            <Card 
-              key={model.id} 
+            <Card
+              key={model.id}
               className="group bg-slate-900/20 backdrop-blur-sm border-slate-800 hover:border-slate-600 transition-all duration-500 hover:bg-slate-800/20 cursor-pointer"
-              style={{ 
-                animation: `fadeInUp 0.6s ease-out ${index * 100}ms both`
+              style={{
+                animation: `fadeInUp 0.6s ease-out ${index * 100}ms both`,
               }}
             >
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Badge 
-                      variant="outline" 
-                      className="border-slate-700 text-slate-300 bg-slate-800/30 text-xs"
-                    >
+                    <Badge variant="outline" className="border-slate-700 text-slate-300 bg-slate-800/30 text-xs">
                       {model.task}
                     </Badge>
                     {model.verified && (
@@ -276,8 +293,12 @@ export default function ModelsPage() {
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1">
-                    {model.tags.slice(0, 3).map(tag => (
-                      <Badge key={tag} variant="outline" className="text-xs bg-slate-800/30 border-slate-700 text-slate-300">
+                    {model.tags.slice(0, 3).map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="text-xs bg-slate-800/30 border-slate-700 text-slate-300"
+                      >
                         {tag}
                       </Badge>
                     ))}
@@ -290,10 +311,7 @@ export default function ModelsPage() {
                       {model.author}
                     </div>
                     <div className="flex items-center">
-                      <DownloadStatsComponent 
-                        itemName={model.title}
-                        className="text-xs"
-                      />
+                      <DownloadStatsComponent itemName={model.title} className="text-xs" />
                     </div>
                     <div className="flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
@@ -307,22 +325,21 @@ export default function ModelsPage() {
                   {/* Actions */}
                   <div className="flex gap-3 pt-2">
                     <Link href={`/models/${model.id}`} className="flex-1">
-                      <Button 
-                        size="sm" 
-                        className="w-full bg-white text-black hover:bg-slate-100 font-medium"
-                      >
+                      <Button size="sm" className="w-full bg-white text-black hover:bg-slate-100 font-medium">
                         <Eye className="h-3 w-3 mr-2" />
                         View Model
                       </Button>
                     </Link>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600"
-                    >
-                      <Cpu className="h-3 w-3 mr-1" />
-                      Use
-                    </Button>
+                    <Link href={`/models/${model.id}/playground`}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600"
+                      >
+                        <Zap className="h-3 w-3 mr-1" />
+                        Try
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>
@@ -337,9 +354,11 @@ export default function ModelsPage() {
               <Search className="h-10 w-10 text-slate-400" />
             </div>
             <h3 className="text-2xl font-light text-white mb-4">No models found</h3>
-            <p className="text-slate-400 mb-8 font-light">Try adjusting your search criteria or browse all categories.</p>
-            <Button 
-              variant="outline" 
+            <p className="text-slate-400 mb-8 font-light">
+              Try adjusting your search criteria or browse all categories.
+            </p>
+            <Button
+              variant="outline"
               onClick={() => {
                 setSearchTerm("")
                 setSelectedCategory("All")
@@ -352,7 +371,7 @@ export default function ModelsPage() {
           </div>
         ) : (
           <div className="text-center mt-16">
-            <Button 
+            <Button
               variant="outline"
               className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600 px-12 py-4 text-lg font-light"
             >
