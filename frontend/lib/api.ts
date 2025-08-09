@@ -38,6 +38,177 @@ export interface NFTMetadata {
   attributes: NFTAttribute[];
 }
 
+
+export interface ModelDetails {
+  id: string
+  name: string
+  type: string
+  description: string
+  author: string
+  downloads: number
+  likes: number
+  views: number
+  forks: number
+  tags: string[]
+  modelCard: string
+  examples: string[]
+  license: string
+  size: string
+  format: string
+  uploadDate: string
+  lastUpdated: string
+  ipfsHash: string
+  parameters: {
+    [key: string]: {
+      min: number
+      max: number
+      default: number
+      description: string
+    }
+  }
+}
+
+// Mock model data for development
+const mockModels: Record<string, ModelDetails> = {
+  "1": {
+    id: "1",
+    name: "GPT-2 Small Fine-tuned",
+    type: "Text Generation",
+    description:
+      "A fine-tuned GPT-2 model for creative writing with enhanced storytelling capabilities. This model has been trained on a curated dataset of literature and creative writing samples to improve its ability to generate coherent, engaging narratives.",
+    author: "openai-community",
+    downloads: 124700,
+    likes: 2340,
+    views: 45678,
+    forks: 234,
+    tags: ["gpt-2", "text-generation", "creative-writing", "fine-tuned"],
+    modelCard: "This model is a fine-tuned version of GPT-2 Small, specifically optimized for creative writing tasks.",
+    examples: [
+      "Once upon a time in a distant galaxy",
+      "The future of artificial intelligence is",
+      "In the heart of Africa, there lived",
+      "Climate change is affecting our planet by",
+      "The ancient library contained secrets that",
+    ],
+    license: "MIT",
+    size: "548 MB",
+    format: "PyTorch",
+    uploadDate: "2024-01-15",
+    lastUpdated: "2024-01-20",
+    ipfsHash: "QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
+    parameters: {
+      temperature: {
+        min: 0.1,
+        max: 2.0,
+        default: 0.8,
+        description: "Controls randomness in generation. Higher values make output more random.",
+      },
+      max_length: {
+        min: 10,
+        max: 500,
+        default: 100,
+        description: "Maximum number of tokens to generate.",
+      },
+      top_p: {
+        min: 0.1,
+        max: 1.0,
+        default: 0.9,
+        description: "Nucleus sampling parameter. Lower values make output more focused.",
+      },
+      top_k: {
+        min: 1,
+        max: 100,
+        default: 50,
+        description: "Top-k sampling parameter. Limits vocabulary for each step.",
+      },
+      repetition_penalty: {
+        min: 1.0,
+        max: 2.0,
+        default: 1.1,
+        description: "Penalty for repetition. Higher values reduce repetitive text.",
+      },
+    },
+  },
+  "2": {
+    id: "2",
+    name: "African Language Classifier",
+    type: "Text Classification",
+    description:
+      "A BERT-based model fine-tuned for classifying text in multiple African languages including Swahili, Yoruba, Amharic, and Zulu.",
+    author: "african-nlp-community",
+    downloads: 89234,
+    likes: 1876,
+    views: 32145,
+    forks: 167,
+    tags: ["bert", "classification", "african-languages", "multilingual"],
+    modelCard: "This model classifies text across 15 African languages with high accuracy.",
+    examples: [
+      "Habari za asubuhi, hali ya hewa ni nzuri leo",
+      "Bawo ni, emi ni omo Yoruba",
+      "Selam, ene Ethiopian negn",
+      "Sawubona, ngiyajabula ukukubona",
+    ],
+    license: "Apache 2.0",
+    size: "1.2 GB",
+    format: "PyTorch",
+    uploadDate: "2024-01-12",
+    lastUpdated: "2024-01-18",
+    ipfsHash: "QmXwBPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdH",
+    parameters: {
+      max_length: {
+        min: 10,
+        max: 512,
+        default: 128,
+        description: "Maximum sequence length for classification.",
+      },
+      threshold: {
+        min: 0.1,
+        max: 0.9,
+        default: 0.5,
+        description: "Classification confidence threshold.",
+      },
+    },
+  },
+  "3": {
+    id: "3",
+    name: "Swahili Speech Recognition",
+    type: "Speech Recognition",
+    description: "A Wav2Vec2-based model trained on Swahili speech data for automatic speech recognition tasks.",
+    author: "east-africa-ai",
+    downloads: 45678,
+    likes: 987,
+    views: 18234,
+    forks: 89,
+    tags: ["wav2vec2", "speech-recognition", "swahili", "asr"],
+    modelCard: "High-accuracy Swahili speech recognition model trained on diverse dialects.",
+    examples: [
+      "Upload an audio file in Swahili to transcribe",
+      "Supported formats: WAV, MP3, FLAC",
+      "Maximum duration: 30 seconds",
+    ],
+    license: "MIT",
+    size: "2.1 GB",
+    format: "PyTorch",
+    uploadDate: "2024-01-08",
+    lastUpdated: "2024-01-16",
+    ipfsHash: "QmZwCPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdI",
+    parameters: {
+       chunk_length: {
+        min: 5,
+        max: 30,
+        default: 10,
+        description: "Audio chunk length in seconds for processing.",
+      },
+      beam_size: {
+        min: 1,
+        max: 10,
+        default: 5,
+        description: "Beam search size for decoding.",
+      },
+    },
+  },
+}
+
 export interface UserUpload {
   id: string;
   name: string;
@@ -351,6 +522,27 @@ export class DeHugAPI {
         transactionHash: "",
         error: "Network error during sync",
       };
+    }
+  }
+
+  // Get model details
+  static async getModel(modelId: string): Promise<ModelDetails> {
+    try {
+      // In a real implementation, this would make an API call
+      // For now, return mock data
+      const model = mockModels[modelId]
+
+      if (!model) {
+        throw new Error(`Model with ID ${modelId} not found`)
+      }
+
+      // Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      return model
+    } catch (error) {
+      console.error("Error fetching model:", error)
+      throw error
     }
   }
 }
