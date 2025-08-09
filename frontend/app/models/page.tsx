@@ -9,6 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Filter, Eye, Calendar, User, Shield, Brain, Zap, Star, Coins, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { DownloadStatsComponent } from "@/components/ui/download-stats"
+import useGetUserContent from "@/hooks/DeHug/useGetUserContent"
+import { useActiveAccount } from "thirdweb/react"
+import useGetContent from "@/hooks/DeHug/useGetContent"
+import useIPFS from "@/hooks/useIPFS"
 
 // Mock data for ML models
 const mockModels = [
@@ -112,6 +116,25 @@ export default function ModelsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [selectedTask, setSelectedTask] = useState("All")
   const [sortBy, setSortBy] = useState("trending")
+  const account = useActiveAccount();
+
+  if (!account) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-950 text-white">
+        <p className="text-lg">Please connect your wallet to view models.</p>
+      </div>
+    )
+  }
+  const { userContent } = useGetUserContent(account.address)
+  console.log("User Content:", userContent)
+
+  const { contentData } = useGetContent(1)
+  console.log("Content Data:", contentData)
+
+  const { fetchFromIPFS } = useIPFS()
+   const fetchedDetail = fetchFromIPFS(contentData?.ipfsHash || "");
+   console.log("Fetched Detail:", fetchedDetail)
+
 
   const filteredModels = mockModels.filter((model) => {
     const matchesSearch =

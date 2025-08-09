@@ -550,11 +550,6 @@
         "internalType": "string"
       },
       {
-        "name": "description",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
         "name": "qualityTier",
         "type": "uint8",
         "internalType": "enum DeHugIncentives.QualityTier"
@@ -632,11 +627,6 @@
         "internalType": "string"
       },
       {
-        "name": "description",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
         "name": "qualityTier",
         "type": "uint8",
         "internalType": "enum DeHugIncentives.QualityTier"
@@ -660,6 +650,106 @@
         "name": "isActive",
         "type": "bool",
         "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "name": "getContentBatch",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "_tokenIds",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "uploaders",
+        "type": "address[]",
+        "internalType": "address[]"
+      },
+      {
+        "name": "contentTypes",
+        "type": "uint8[]",
+        "internalType": "enum DeHugIncentives.ContentType[]"
+      },
+      {
+        "name": "ipfsHashes",
+        "type": "string[]",
+        "internalType": "string[]"
+      },
+      {
+        "name": "titles",
+        "type": "string[]",
+        "internalType": "string[]"
+      },
+      {
+        "name": "qualityTiers",
+        "type": "uint8[]",
+        "internalType": "enum DeHugIncentives.QualityTier[]"
+      },
+      {
+        "name": "downloadCounts",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "isActiveList",
+        "type": "bool[]",
+        "internalType": "bool[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "name": "getContentMetadata",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "_tokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "name": "getLatestContent",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "_count",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "tokenIds",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "name": "getLatestTokenId",
+    "type": "function",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -933,6 +1023,19 @@
     "stateMutability": "view"
   },
   {
+    "name": "totalSupply",
+    "type": "function",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
     "name": "transferOwnership",
     "type": "function",
     "inputs": [
@@ -989,11 +1092,6 @@
       },
       {
         "name": "_title",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "_description",
         "type": "string",
         "internalType": "string"
       },

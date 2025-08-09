@@ -133,7 +133,7 @@ export function Header() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <div className="flex relative lg:left-8 items-end justify-end">
+        <div className="flex relative lg:left-16 items-end justify-end">
           {/* <Button 
             variant="outline" 
             size="sm" 

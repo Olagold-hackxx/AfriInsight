@@ -285,7 +285,6 @@ export class DeHugAPI {
     }
   }
 
-
   static async getItemStats(itemName: string): Promise<DownloadStats | null> {
     try {
       const allStats = await this.getDownloadStats();
@@ -295,7 +294,6 @@ export class DeHugAPI {
       return null;
     }
   }
-
 
   // Download from Filecoin/IPFS
   static async downloadFromFilecoin(
@@ -307,9 +305,7 @@ export class DeHugAPI {
       // Track the download
       await this.trackDownload(itemName, source);
 
-      // Return IPFS gateway URL (mock for now)
-      if (ipfsHash)
-        ipfsHash = `Qm${Math.random().toString(36).substring(2, 15)}`;
+      // Return IPFS gateway URL using the provided ipfsHash
       return `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
     } catch (error) {
       console.warn("Error downloading from Filecoin:", error);
@@ -546,3 +542,4 @@ export class DeHugAPI {
     }
   }
 }
+
