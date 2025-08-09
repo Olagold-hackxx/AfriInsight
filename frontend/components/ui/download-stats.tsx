@@ -42,7 +42,7 @@ export function DownloadStatsComponent({ itemName, className = "", showDetailed 
   if (loading) {
     return (
       <div className={`animate-pulse ${className}`}>
-        <div className="h-16 bg-slate-800/20 border border-slate-700"></div>
+        <div className="h-4 bg-slate-800/20 border border-slate-700"></div>
       </div>
     )
   }

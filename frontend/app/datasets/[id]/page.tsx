@@ -1,117 +1,272 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Download, Eye, Share2, Star, Calendar, User, FileText, BarChart3, Shield, Lock, Unlock, AlertTriangle, CheckCircle, Upload, Coins, Trophy, Code, Heart, GitBranch, Database, Filter } from 'lucide-react'
-import Link from "next/link"
-import { DownloadStatsComponent } from "@/components/ui/download-stats"
-import { DownloadButton } from "@/components/ui/download-button"
-import { DeHugAPI } from "@/lib/api"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Download,
+  Eye,
+  Share2,
+  Star,
+  Calendar,
+  User,
+  FileText,
+  BarChart3,
+  Shield,
+  Unlock,
+  AlertTriangle,
+  Coins,
+  Trophy,
+  Heart,
+  GitBranch,
+  Database,
+  Loader2,
+  AlertCircle,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { DownloadStatsComponent } from "@/components/ui/download-stats";
+import { DownloadButton } from "@/components/ui/download-button";
+import { DeHugAPI } from "@/lib/api";
+import useGetContentMetadata from "@/hooks/DeHug/useGetContentMetadata";
+import { useAccount } from "@/lib/thirdweb-hooks";
 
-// Mock dataset data
-const mockDataset = {
-  id: "1",
-  title: "Common Crawl Web Text",
-  description: "Large-scale web text dataset extracted from Common Crawl for language model training. This dataset contains billions of tokens from web pages across multiple languages, cleaned and filtered for quality.",
-  category: "Natural Language Processing",
-  author: "common-crawl",
-  authorAddress: "0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4",
-  uploadDate: "2024-01-15",
-  lastUpdated: "2024-01-20",
-  downloads: 45600,
-  size: "40.2 GB",
-  format: "JSON Lines",
-  license: "CC BY 4.0",
-  tags: ["web-text", "language-modeling", "large-scale", "multilingual"],
-  insights: 156,
-  rating: 4.6,
-  reviews: 89,
-  accessLevel: "public",
-  ipfsHash: "QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
-  samples: "2.1B tokens",
-  languages: ["English", "Spanish", "French", "German", "Chinese"],
-  nftDetails: {
-    tokenId: "0x5e6f7a8b",
-    currentValue: "5.2 ETH",
-    initialValue: "0.2 ETH",
-    contractAddress: "0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4",
-    owner: "0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4"
-  },
-  files: [
-    { name: "train.jsonl", size: "35.8 GB", type: "Training Data", samples: "1.8B" },
-    { name: "validation.jsonl", size: "2.1 GB", type: "Validation Data", samples: "150M" },
+export default function DatasetDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isStarred, setIsStarred] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+
+  const { isConnected } = useAccount();
+  const tokenId = Number.parseInt(params.id);
+
+  // Get content data and metadata
+  const {
+    metadata,
+    isLoading: metadataLoading,
+    error: metadataError,
+    refetch: refetchMetadata,
+  } = useGetContentMetadata(tokenId);
+
+  const isLoading = metadataLoading;
+  const error = metadataError;
+
+  // Check if this is a dataset (contentType === 0)
+  const isDataset = metadata?.contentType === 0;
+
+  const handleDownload = async () => {
+    if (!metadata) return;
+    try {
+      await DeHugAPI.downloadFromFilecoin(
+        metadata.title,
+        metadata.ipfsHash,
+        "ui"
+      );
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
+
+  const refetch = () => {
+    refetchMetadata();
+  };
+
+  // Wallet connection check
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
+        <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800 p-8 text-center max-w-md">
+          <CardContent>
+            <AlertCircle className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+            <h3 className="text-xl font-light text-white mb-2">
+              Wallet Required
+            </h3>
+            <p className="text-slate-400 font-light mb-6">
+              Please connect your wallet to view dataset details.
+            </p>
+            <Button className="bg-white text-black hover:bg-slate-100 font-medium">
+              Connect Wallet
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
+        <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800 p-8 text-center">
+          <CardContent>
+            <Loader2 className="h-16 w-16 text-slate-400 mx-auto mb-4 animate-spin" />
+            <h3 className="text-xl font-light text-white mb-2">
+              Loading Dataset
+            </h3>
+            <p className="text-slate-400 font-light">
+              Fetching dataset details from blockchain...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error state or not a dataset
+  if (error || !metadata || !isDataset) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
+        <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800 p-8 text-center max-w-md">
+          <CardContent>
+            <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
+            <h3 className="text-xl font-light text-white mb-2">
+              Dataset Not Found
+            </h3>
+            <p className="text-slate-400 font-light mb-6">
+              {error ||
+                (!isDataset
+                  ? "This content is not a dataset"
+                  : "The requested dataset could not be found or loaded.")}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button
+                variant="outline"
+                onClick={refetch}
+                className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50"
+              >
+                Try Again
+              </Button>
+              <Link href="/datasets">
+                <Button className="bg-white text-black hover:bg-slate-100 font-medium">
+                  Browse Datasets
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Extract data from content and metadata
+  const properties = metadata?.properties || {};
+  const title = metadata?.name || `Dataset #${params.id}`;
+  const description = metadata?.description || "No description available";
+  const category = properties.category || "Natural Language Processing";
+  const author = `${metadata.uploader?.slice(
+    0,
+    6
+  )}...${metadata.uploader?.slice(-4)}`;
+  const uploadDate = new Date(metadata.uploadTimestamp * 1000);
+  const downloads = metadata.downloadCount;
+  const likes = Math.floor(metadata.totalPointsEarned / 10);
+  const isVerified = metadata.qualityTier === 2;
+  const size = properties.size || "Unknown";
+  const format = properties.format || "JSON Lines";
+  const license = properties.license || "CC BY 4.0";
+  const tags = properties.tags || ["blockchain", "decentralized", "dataset"];
+  const rating =
+    metadata.qualityTier === 2 ? 4.6 : metadata.qualityTier === 1 ? 4.2 : 3.8;
+  const nftValue =
+    metadata.qualityTier === 2
+      ? "5.2 ETH"
+      : metadata.qualityTier === 1
+      ? "2.1 ETH"
+      : "0.8 ETH";
+  const samples =
+    properties.samples ||
+    (metadata.qualityTier === 2
+      ? "2.1B"
+      : metadata.qualityTier === 1
+      ? "500M"
+      : "100M");
+  const languages = properties.languages || ["English", "Spanish", "French"];
+
+  // Mock sample data for preview
+  const sampleData = [
+    {
+      id: 1,
+      text: "Sample text from the dataset...",
+      category: category,
+      length: 1247,
+    },
+    {
+      id: 2,
+      text: "Another sample entry from the dataset...",
+      category: category,
+      length: 2156,
+    },
+    {
+      id: 3,
+      text: "Third sample showing dataset structure...",
+      category: category,
+      length: 1834,
+    },
+  ];
+
+  // Mock files data
+  const files = [
+    {
+      name: "train.jsonl",
+      size: size,
+      type: "Training Data",
+      samples: samples,
+    },
+    {
+      name: "validation.jsonl",
+      size: "10% of total",
+      type: "Validation Data",
+      samples: "10%",
+    },
     { name: "test.jsonl", size: "2.0 GB", type: "Test Data", samples: "150M" },
     { name: "metadata.json", size: "45 KB", type: "Metadata", samples: "1" },
-    { name: "README.md", size: "12 KB", type: "Documentation", samples: "1" }
-  ],
-  sampleData: [
-    { id: 1, text: "The quick brown fox jumps over the lazy dog...", language: "en", domain: "example.com", length: 1247 },
-    { id: 2, text: "Machine learning is a subset of artificial intelligence...", language: "en", domain: "tech-blog.com", length: 2156 },
-    { id: 3, text: "Climate change affects global weather patterns...", language: "en", domain: "science-news.org", length: 1834 },
-    { id: 4, text: "The history of ancient civilizations reveals...", language: "en", domain: "history-wiki.edu", length: 2891 },
-    { id: 5, text: "Cooking techniques vary across different cultures...", language: "en", domain: "food-blog.net", length: 1456 }
-  ],
-  usage: {
-    pythonCode: `from datasets import load_dataset
+    { name: "README.md", size: "12 KB", type: "Documentation", samples: "1" },
+  ];
+
+  // Usage code examples
+  const pythonCode = `from datasets import load_dataset
 
 # Load dataset from Hugging Face Hub
-dataset = load_dataset("common-crawl/web-text")
+dataset = load_dataset("${title.toLowerCase().replace(/\s+/g, "-")}")
 
 # Access training split
 train_data = dataset["train"]
 
 # Iterate through samples
 for sample in train_data:
-    print(sample["text"][:100])
-    print(f"Language: {sample['language']}")
-    print(f"Domain: {sample['domain']}")
-    print("---")`,
-    dehugCode: `from dehug import DeHugRepository
+  print(sample)
+  print("---")`;
+
+  const dehugCode = `from dehug import DeHugRepository
 
 # Load dataset from decentralized storage
-dataset = DeHugRepository.load_dataset("common-crawl/web-text")
+dataset = DeHugRepository.load_dataset("${metadata.ipfsHash}")
 
 # Access training data
 train_data = dataset["train"]
 
 # Process samples
 for sample in train_data:
-    print(f"Text: {sample['text'][:100]}...")
-    print(f"Metadata: {sample['metadata']}")`
-  },
-  statistics: {
-    totalSamples: "2.1B",
-    avgLength: "1,247 tokens",
-    languages: "15",
-    domains: "50K+"
-  },
-  governance: {
-    isVerified: true,
-    verificationDate: "2024-01-18",
-    verifiedBy: "DeHug Verification Committee"
-  }
-}
-
-export default function DatasetDetailPage({ params }: { params: { id: string } }) {
-  const [activeTab, setActiveTab] = useState("overview")
-  const [isStarred, setIsStarred] = useState(false)
-  const [isLiked, setIsLiked] = useState(false)
-
-  const handleDownload = async () => {
-    try {
-      await DeHugAPI.downloadFromFilecoin(mockDataset.title, mockDataset.ipfsHash, 'ui')
-    } catch (error) {
-      console.error("Download failed:", error)
-    }
-  }
-
-  const handleAnalyze = () => {
-    console.log("Starting analysis...")
-  }
+  print(sample)`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white">
@@ -121,42 +276,49 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
               <div className="flex items-center mb-4">
-                <Badge variant="outline" className="mr-3 border-slate-700 text-slate-300 bg-slate-800/30">
-                  {mockDataset.category}
+                <Badge
+                  variant="outline"
+                  className="mr-3 border-slate-700 text-slate-300 bg-slate-800/30"
+                >
+                  {category}
                 </Badge>
-                {mockDataset.governance.isVerified && (
+                {isVerified && (
                   <Badge className="mr-3 bg-slate-700 text-slate-200 border-slate-600">
                     <Shield className="h-3 w-3 mr-1" />
                     Verified
                   </Badge>
                 )}
-                <Badge variant="outline" className="border-slate-700 text-slate-300 bg-slate-800/30">
-                  {mockDataset.accessLevel === 'public' ? (
-                    <><Unlock className="h-3 w-3 mr-1" />Public</>
-                  ) : (
-                    <><Lock className="h-3 w-3 mr-1" />Private</>
-                  )}
+                <Badge
+                  variant="outline"
+                  className="border-slate-700 text-slate-300 bg-slate-800/30"
+                >
+                  <Unlock className="h-3 w-3 mr-1" />
+                  Public
                 </Badge>
               </div>
-              <h1 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight">{mockDataset.title}</h1>
-              <p className="text-xl text-slate-300 mb-6 font-light leading-relaxed max-w-4xl">{mockDataset.description}</p>
-              
-              <div className="flex items-center text-sm text-slate-400 space-x-6 font-light">
+              <h1 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight">
+                {title}
+              </h1>
+              <p className="text-xl text-slate-300 line-clamp-5 mb-6 font-light leading-relaxed w-full">
+                {description}
+              </p>
+
+              <div className="flex w-full items-center text-sm text-slate-400 space-x-6 font-light">
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-2" />
-                  {mockDataset.author}
+                  {author}
                 </div>
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2" />
-                  Updated {new Date(mockDataset.lastUpdated).toLocaleDateString()}
+                  Updated {uploadDate.toLocaleDateString()}
                 </div>
                 <div className="flex items-center">
                   <Download className="h-4 w-4 mr-2" />
-                  {mockDataset.downloads.toLocaleString()} downloads
+                  {downloads?.toLocaleString()} downloads
                 </div>
                 <div className="flex items-center">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  {mockDataset.insights} insights
+                  <Heart className="h-4 w-4 mr-2" />
+                  {likes.toLocaleString()} likes
                 </div>
               </div>
             </div>
@@ -168,8 +330,12 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 onClick={() => setIsStarred(!isStarred)}
                 className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50"
               >
-                <Star className={`h-4 w-4 mr-2 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
-                {isStarred ? 'Starred' : 'Star'}
+                <Star
+                  className={`h-4 w-4 mr-2 ${
+                    isStarred ? "fill-yellow-400 text-yellow-400" : ""
+                  }`}
+                />
+                {isStarred ? "Starred" : "Star"}
               </Button>
               <Button
                 variant="outline"
@@ -177,96 +343,148 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 onClick={() => setIsLiked(!isLiked)}
                 className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50"
               >
-                <Heart className={`h-4 w-4 mr-2 ${isLiked ? 'fill-red-400 text-red-400' : ''}`} />
-                {isLiked ? 'Liked' : 'Like'}
+                <Heart
+                  className={`h-4 w-4 mr-2 ${
+                    isLiked ? "fill-red-400 text-red-400" : ""
+                  }`}
+                />
+                {isLiked ? "Liked" : "Like"}
               </Button>
-              <Button variant="outline" size="sm" className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50"
+              >
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
               <DownloadButton
-                itemName={mockDataset.title}
-                ipfsHash={mockDataset.ipfsHash}
+                itemName={title}
+                ipfsHash={metadata.ipfsHash}
                 className="bg-white text-black hover:bg-slate-100 font-medium"
                 onDownloadComplete={() => {
-                  console.log("Dataset download completed successfully")
+                  console.log("Dataset download completed successfully");
                 }}
               />
-              <Button onClick={handleAnalyze} className="bg-slate-700 text-white hover:bg-slate-600 font-medium">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Analyze
-              </Button>
             </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-400 font-light">Size</p>
-                    <p className="text-lg font-light text-white">{mockDataset.size}</p>
+                    <p className="text-lg font-light text-white">{size}</p>
                   </div>
                   <Database className="h-6 w-6 text-slate-400" />
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-400 font-light">Samples</p>
-                    <p className="text-lg font-light text-white">{mockDataset.samples}</p>
+                    <p className="text-lg font-light text-white">{samples}</p>
                   </div>
                   <FileText className="h-6 w-6 text-slate-400" />
                 </div>
               </CardContent>
             </Card>
-            
-            <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-400 font-light">Rating</p>
-                    <p className="text-lg font-light text-white">{mockDataset.rating}/5</p>
-                  </div>
-                  <Star className="h-6 w-6 text-yellow-400" />
-                </div>
-              </CardContent>
-            </Card>
-            
+
             <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-400 font-light">License</p>
-                    <p className="text-lg font-light text-white">{mockDataset.license}</p>
+                    <p className="text-lg font-light text-white">{license}</p>
                   </div>
                   <Shield className="h-6 w-6 text-slate-400" />
                 </div>
               </CardContent>
             </Card>
 
-            <div className="md:col-span-2">
-              <DownloadStatsComponent 
-                itemName={mockDataset.title}
-                showDetailed={true}
-              />
-            </div>
+            <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-400 font-light">Format</p>
+                    <p className="text-lg font-light text-white">{format}</p>
+                  </div>
+                  <FileText className="h-6 w-6 text-slate-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 backdrop-blur-sm border-amber-800/30">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-amber-200/80 font-light">
+                      NFT Value
+                    </p>
+                    <p className="text-lg font-light text-amber-400">
+                      {nftValue}
+                    </p>
+                  </div>
+                  <Coins className="h-6 w-6 text-amber-400" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
+          <DownloadStatsComponent
+            itemName={title}
+            className="lg:col-span-2 mt-4"
+            showDetailed={true}
+          />
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-8"
+        >
           <TabsList className="grid w-full grid-cols-6 bg-slate-900/30 border border-slate-800">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:text-black font-light">Overview</TabsTrigger>
-            <TabsTrigger value="preview" className="data-[state=active]:bg-white data-[state=active]:text-black font-light">Data Preview</TabsTrigger>
-            <TabsTrigger value="usage" className="data-[state=active]:bg-white data-[state=active]:text-black font-light">Usage</TabsTrigger>
-            <TabsTrigger value="files" className="data-[state=active]:bg-white data-[state=active]:text-black font-light">Files</TabsTrigger>
-            <TabsTrigger value="nft" className="data-[state=active]:bg-white data-[state=active]:text-black font-light">NFT Details</TabsTrigger>
-            <TabsTrigger value="insights" className="data-[state=active]:bg-white data-[state=active]:text-black font-light">AI Insights</TabsTrigger>
+            <TabsTrigger
+              value="overview"
+              className="data-[state=active]:bg-white data-[state=active]:text-black font-light"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="preview"
+              className="data-[state=active]:bg-white data-[state=active]:text-black font-light"
+            >
+              Data Preview
+            </TabsTrigger>
+            <TabsTrigger
+              value="usage"
+              className="data-[state=active]:bg-white data-[state=active]:text-black font-light"
+            >
+              Usage
+            </TabsTrigger>
+            <TabsTrigger
+              value="files"
+              className="data-[state=active]:bg-white data-[state=active]:text-black font-light"
+            >
+              Files
+            </TabsTrigger>
+            <TabsTrigger
+              value="nft"
+              className="data-[state=active]:bg-white data-[state=active]:text-black font-light"
+            >
+              NFT Details
+            </TabsTrigger>
+            <TabsTrigger
+              value="community"
+              className="data-[state=active]:bg-white data-[state=active]:text-black font-light"
+            >
+              Community
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -276,31 +494,39 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 {/* Description */}
                 <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-white font-light text-xl">About This Dataset</CardTitle>
+                    <CardTitle className="text-white font-light text-xl">
+                      About This Dataset
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-slate-300 mb-6 font-light leading-relaxed">{mockDataset.description}</p>
-                    
+                    <p className="text-slate-300 whitespace-pre-wrap mb-6 font-light leading-relaxed">
+                      {description}
+                    </p>
+
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-light text-white mb-3">Key Features:</h4>
+                        <h4 className="font-light text-white mb-3">
+                          Key Features:
+                        </h4>
                         <ul className="text-sm text-slate-300 space-y-2 font-light">
-                          <li>• Massive scale with 2.1B tokens from web crawl</li>
-                          <li>• Multi-language support across 15 languages</li>
-                          <li>• Quality filtered and deduplicated content</li>
-                          <li>• Domain diversity from 50K+ websites</li>
-                          <li>• Ready for language model training</li>
+                          <li>• Stored on decentralized infrastructure</li>
+                          <li>• Blockchain-verified authenticity</li>
+                          <li>• Community curated and validated</li>
+                          <li>• High-quality data with proper licensing</li>
+                          <li>• Ready for machine learning applications</li>
                         </ul>
                       </div>
-                      
+
                       <div>
-                        <h4 className="font-light text-white mb-3">Use Cases:</h4>
+                        <h4 className="font-light text-white mb-3">
+                          Use Cases:
+                        </h4>
                         <ul className="text-sm text-slate-300 space-y-2 font-light">
-                          <li>• Large language model pre-training</li>
-                          <li>• Text generation model fine-tuning</li>
-                          <li>• Natural language understanding research</li>
-                          <li>• Multilingual model development</li>
-                          <li>• Web content analysis and research</li>
+                          <li>• Machine learning model training</li>
+                          <li>• Research and academic studies</li>
+                          <li>• Data analysis and insights</li>
+                          <li>• Benchmarking and evaluation</li>
+                          <li>• Educational purposes</li>
                         </ul>
                       </div>
                     </div>
@@ -310,25 +536,43 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 {/* Statistics */}
                 <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-white font-light text-xl">Dataset Statistics</CardTitle>
+                    <CardTitle className="text-white font-light text-xl">
+                      Dataset Statistics
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                       <div className="text-center">
-                        <div className="text-2xl font-light text-white mb-1">{mockDataset.statistics.totalSamples}</div>
-                        <div className="text-slate-400 font-light text-sm">Total Samples</div>
+                        <div className="text-2xl font-light text-white mb-1">
+                          {samples}
+                        </div>
+                        <div className="text-slate-400 font-light text-sm">
+                          Total Samples
+                        </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-light text-white mb-1">{mockDataset.statistics.avgLength}</div>
-                        <div className="text-slate-400 font-light text-sm">Avg Length</div>
+                        <div className="text-2xl font-light text-white mb-1">
+                          1,247
+                        </div>
+                        <div className="text-slate-400 font-light text-sm">
+                          Avg Length
+                        </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-light text-white mb-1">{mockDataset.statistics.languages}</div>
-                        <div className="text-slate-400 font-light text-sm">Languages</div>
+                        <div className="text-2xl font-light text-white mb-1">
+                          {languages.length}
+                        </div>
+                        <div className="text-slate-400 font-light text-sm">
+                          Languages
+                        </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-light text-white mb-1">{mockDataset.statistics.domains}</div>
-                        <div className="text-slate-400 font-light text-sm">Domains</div>
+                        <div className="text-2xl font-light text-white mb-1">
+                          Multiple
+                        </div>
+                        <div className="text-slate-400 font-light text-sm">
+                          Domains
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -337,12 +581,18 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 {/* Tags */}
                 <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-white font-light text-xl">Tags</CardTitle>
+                    <CardTitle className="text-white font-light text-xl">
+                      Tags
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {mockDataset.tags.map(tag => (
-                        <Badge key={tag} variant="outline" className="border-slate-700 text-slate-300 bg-slate-800/30">
+                      {tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="border-slate-700 text-slate-300 bg-slate-800/30"
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -355,18 +605,31 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 {/* Author Info */}
                 <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-white font-light text-xl">Dataset Author</CardTitle>
+                    <CardTitle className="text-white font-light text-xl">
+                      Dataset Author
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <p className="font-light text-white text-lg">{mockDataset.author}</p>
-                        <p className="text-sm text-slate-400 font-light">Data Organization</p>
+                        <p className="font-light text-white text-lg">
+                          {author}
+                        </p>
+                        <p className="text-sm text-slate-400 font-light">
+                          Data Contributor
+                        </p>
                       </div>
                       <div className="text-xs text-slate-500 font-light">
-                        <p>Wallet: {mockDataset.authorAddress.slice(0, 6)}...{mockDataset.authorAddress.slice(-4)}</p>
+                        <p>
+                          Wallet: {metadata.uploader?.slice(0, 6)}...
+                          {metadata.uploader?.slice(-4)}
+                        </p>
                       </div>
-                      <Button variant="outline" size="sm" className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light"
+                      >
                         View Profile
                       </Button>
                     </div>
@@ -376,12 +639,18 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 {/* Languages */}
                 <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-white font-light text-xl">Languages</CardTitle>
+                    <CardTitle className="text-white font-light text-xl">
+                      Languages
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {mockDataset.languages.map(lang => (
-                        <Badge key={lang} variant="outline" className="border-slate-700 text-slate-300 bg-slate-800/30">
+                      {languages.map((lang: string) => (
+                        <Badge
+                          key={lang}
+                          variant="outline"
+                          className="border-slate-700 text-slate-300 bg-slate-800/30"
+                        >
                           {lang}
                         </Badge>
                       ))}
@@ -392,24 +661,38 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 {/* Technical Details */}
                 <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-white font-light text-xl">Technical Details</CardTitle>
+                    <CardTitle className="text-white font-light text-xl">
+                      Technical Details
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between text-sm font-light">
+                      <span className="text-slate-400">Token ID:</span>
+                      <code className="text-xs text-slate-300">
+                        {params.id}
+                      </code>
+                    </div>
+                    <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">IPFS Hash:</span>
-                      <code className="text-xs text-slate-300">{mockDataset.ipfsHash.slice(0, 8)}...</code>
+                      <code className="text-xs text-slate-300">
+                        {metadata?.ipfsHash?.slice(0, 8)}...
+                      </code>
                     </div>
                     <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">Upload Date:</span>
-                      <span className="text-slate-300">{new Date(mockDataset.uploadDate).toLocaleDateString()}</span>
+                      <span className="text-slate-300">
+                        {uploadDate.toLocaleDateString()}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">File Count:</span>
-                      <span className="text-slate-300">{mockDataset.files.length} files</span>
+                      <span className="text-slate-300">
+                        {files.length} files
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">Total Size:</span>
-                      <span className="text-slate-300">{mockDataset.size}</span>
+                      <span className="text-slate-300">{size}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -417,24 +700,32 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 {/* Quick Actions */}
                 <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-white font-light text-xl">Quick Actions</CardTitle>
+                    <CardTitle className="text-white font-light text-xl">
+                      Quick Actions
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Link href={`/insights?dataset=${mockDataset.id}`}>
-                      <Button variant="outline" size="sm" className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light">
-                        <BarChart3 className="h-4 w-4 mr-2" />
-                        Generate AI Insights
-                      </Button>
-                    </Link>
-                    <Button variant="outline" size="sm" className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light"
+                    >
                       <Eye className="h-4 w-4 mr-2" />
                       View on IPFS
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light"
+                    >
                       <GitBranch className="h-4 w-4 mr-2" />
                       Fork Dataset
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light"
+                    >
                       <AlertTriangle className="h-4 w-4 mr-2" />
                       Report Issue
                     </Button>
@@ -448,9 +739,12 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
           <TabsContent value="preview" className="space-y-8">
             <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
               <CardHeader>
-                <CardTitle className="text-white font-light text-xl">Sample Data</CardTitle>
+                <CardTitle className="text-white font-light text-xl">
+                  Sample Data
+                </CardTitle>
                 <CardDescription className="text-slate-400 font-light">
-                  Preview of dataset samples. Download the full dataset to access all records.
+                  Preview of dataset samples. Download the full dataset to
+                  access all records.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -458,23 +752,35 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-800">
-                        <TableHead className="text-slate-300 font-light">ID</TableHead>
-                        <TableHead className="text-slate-300 font-light">Text Preview</TableHead>
-                        <TableHead className="text-slate-300 font-light">Language</TableHead>
-                        <TableHead className="text-slate-300 font-light">Domain</TableHead>
-                        <TableHead className="text-slate-300 font-light">Length</TableHead>
+                        <TableHead className="text-slate-300 font-light">
+                          ID
+                        </TableHead>
+                        <TableHead className="text-slate-300 font-light">
+                          Text Preview
+                        </TableHead>
+                        <TableHead className="text-slate-300 font-light">
+                          Category
+                        </TableHead>
+                        <TableHead className="text-slate-300 font-light">
+                          Length
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {mockDataset.sampleData.map((row) => (
+                      {sampleData.map((row) => (
                         <TableRow key={row.id} className="border-slate-800">
-                          <TableCell className="text-slate-300 font-light">{row.id}</TableCell>
-                          <TableCell className="text-slate-300 font-light max-w-md">
-                            <div className="truncate">{row.text.slice(0, 80)}...</div>
+                          <TableCell className="text-slate-300 font-light">
+                            {row.id}
                           </TableCell>
-                          <TableCell className="text-slate-300 font-light">{row.language}</TableCell>
-                          <TableCell className="text-slate-300 font-light">{row.domain}</TableCell>
-                          <TableCell className="text-slate-300 font-light">{row.length.toLocaleString()}</TableCell>
+                          <TableCell className="text-slate-300 font-light max-w-md">
+                            <div className="truncate">{row.text}</div>
+                          </TableCell>
+                          <TableCell className="text-slate-300 font-light">
+                            {row.category}
+                          </TableCell>
+                          <TableCell className="text-slate-300 font-light">
+                            {row.length.toLocaleString()}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -482,11 +788,12 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                 </div>
                 <div className="mt-6 text-center">
                   <p className="text-sm text-slate-400 mb-4 font-light">
-                    Showing 5 of {mockDataset.samples} samples. Download the full dataset to access all data.
+                    Showing 3 of {samples} samples. Download the full dataset to
+                    access all data.
                   </p>
                   <DownloadButton
-                    itemName={mockDataset.title}
-                    ipfsHash={mockDataset.ipfsHash}
+                    itemName={title}
+                    ipfsHash={metadata.ipfsHash}
                     size="sm"
                     className="bg-white text-black hover:bg-slate-100 font-medium"
                   />
@@ -500,7 +807,9 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                 <CardHeader>
-                  <CardTitle className="text-white font-light text-xl">Datasets Library</CardTitle>
+                  <CardTitle className="text-white font-light text-xl">
+                    Datasets Library
+                  </CardTitle>
                   <CardDescription className="text-slate-400 font-light">
                     Use with the Hugging Face datasets library
                   </CardDescription>
@@ -511,10 +820,12 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                       <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
                       <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
                       <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-slate-400 text-sm ml-4 font-light">datasets_usage.py</span>
+                      <span className="text-slate-400 text-sm ml-4 font-light">
+                        datasets_usage.py
+                      </span>
                     </div>
                     <pre className="text-slate-300 text-sm leading-relaxed font-mono overflow-x-auto">
-                      <code>{mockDataset.usage.pythonCode}</code>
+                      <code>{pythonCode}</code>
                     </pre>
                   </div>
                 </CardContent>
@@ -522,7 +833,9 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
 
               <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                 <CardHeader>
-                  <CardTitle className="text-white font-light text-xl">DeHug SDK</CardTitle>
+                  <CardTitle className="text-white font-light text-xl">
+                    DeHug SDK
+                  </CardTitle>
                   <CardDescription className="text-slate-400 font-light">
                     Use with our decentralized SDK for direct IPFS access
                   </CardDescription>
@@ -533,10 +846,12 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
                       <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
                       <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
                       <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-slate-400 text-sm ml-4 font-light">dehug_usage.py</span>
+                      <span className="text-slate-400 text-sm ml-4 font-light">
+                        dehug_usage.py
+                      </span>
                     </div>
                     <pre className="text-slate-300 text-sm leading-relaxed font-mono overflow-x-auto">
-                      <code>{mockDataset.usage.dehugCode}</code>
+                      <code>{dehugCode}</code>
                     </pre>
                   </div>
                 </CardContent>
@@ -545,7 +860,9 @@ export default function DatasetDetailPage({ params }: { params: { id: string } }
 
             <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
               <CardHeader>
-                <CardTitle className="text-white font-light text-xl">Installation</CardTitle>
+                <CardTitle className="text-white font-light text-xl">
+                  Installation
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="bg-slate-950/50 border border-slate-800 p-4">
@@ -565,30 +882,41 @@ pip install dehug`}</code>
           <TabsContent value="files" className="space-y-8">
             <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
               <CardHeader>
-                <CardTitle className="text-white font-light text-xl">Dataset Files</CardTitle>
+                <CardTitle className="text-white font-light text-xl">
+                  Dataset Files
+                </CardTitle>
                 <CardDescription className="text-slate-400 font-light">
                   Individual files included in this dataset package
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {mockDataset.files.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-slate-800/20 border border-slate-700">
+                  {files.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-4 bg-slate-800/20 border border-slate-700"
+                    >
                       <div className="flex items-center">
                         <FileText className="h-5 w-5 text-slate-400 mr-4" />
                         <div>
                           <p className="font-light text-white">{file.name}</p>
-                          <p className="text-sm text-slate-400 font-light">{file.size} • {file.type} • {file.samples} samples</p>
+                          <p className="text-sm text-slate-400 font-light">
+                            {file.size} • {file.type} • {file.samples} samples
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button size="sm" variant="outline" className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light"
+                        >
                           <Eye className="h-4 w-4 mr-1" />
                           Preview
                         </Button>
                         <DownloadButton
-                          itemName={`${mockDataset.title}/${file.name}`}
-                          ipfsHash={mockDataset.ipfsHash}
+                          itemName={`${title}/${file.name}`}
+                          ipfsHash={metadata.ipfsHash}
                           size="sm"
                           className="bg-white text-black hover:bg-slate-100 font-medium"
                         />
@@ -613,72 +941,143 @@ pip install dehug`}</code>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <span className="text-amber-200/80 font-light text-sm">Token ID:</span>
-                      <p className="text-white font-mono">{mockDataset.nftDetails.tokenId}</p>
+                      <span className="text-amber-200/80 font-light text-sm">
+                        Token ID:
+                      </span>
+                      <p className="text-white font-mono">#{params.id}</p>
                     </div>
                     <div>
-                      <span className="text-amber-200/80 font-light text-sm">Current Value:</span>
-                      <p className="text-amber-400 font-medium text-lg">{mockDataset.nftDetails.currentValue}</p>
+                      <span className="text-amber-200/80 font-light text-sm">
+                        Current Value:
+                      </span>
+                      <p className="text-amber-400 font-medium text-lg">
+                        {nftValue}
+                      </p>
                     </div>
                     <div>
-                      <span className="text-amber-200/80 font-light text-sm">Initial Value:</span>
-                      <p className="text-amber-200">{mockDataset.nftDetails.initialValue}</p>
+                      <span className="text-amber-200/80 font-light text-sm">
+                        Initial Value:
+                      </span>
+                      <p className="text-amber-200">0.2 ETH</p>
                     </div>
                     <div>
-                      <span className="text-amber-200/80 font-light text-sm">Growth:</span>
-                      <p className="text-green-400 font-medium">+2500%</p>
+                      <span className="text-amber-200/80 font-light text-sm">
+                        Growth:
+                      </span>
+                      <p className="text-green-400 font-medium">
+                        +
+                        {Math.round(
+                          ((Number.parseFloat(nftValue) - 0.2) / 0.2) * 100
+                        )}
+                        %
+                      </p>
                     </div>
                   </div>
                   <div>
-                    <span className="text-amber-200/80 font-light text-sm">Contract Address:</span>
-                    <p className="text-white font-mono text-xs break-all">{mockDataset.nftDetails.contractAddress}</p>
+                    <span className="text-amber-200/80 font-light text-sm">
+                      Contract Address:
+                    </span>
+                    <p className="text-white font-mono text-xs break-all">
+                      {process.env.DEHUG_ADDRESS}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-amber-200/80 font-light text-sm">Owner:</span>
-                    <p className="text-white font-mono text-xs">{mockDataset.nftDetails.owner.slice(0, 6)}...{mockDataset.nftDetails.owner.slice(-4)}</p>
+                    <span className="text-amber-200/80 font-light text-sm">
+                      Owner:
+                    </span>
+                    <p className="text-white font-mono text-xs">
+                      {metadata.uploader?.slice(0, 6)}...
+                      {metadata.uploader?.slice(-4)}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                 <CardHeader>
-                  <CardTitle className="text-white font-light text-xl">Value History</CardTitle>
+                  <CardTitle className="text-white font-light text-xl">
+                    Value History
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-12">
                     <BarChart3 className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-light text-white mb-2">Value Chart Coming Soon</h3>
+                    <h3 className="text-lg font-light text-white mb-2">
+                      Value Chart Coming Soon
+                    </h3>
                     <p className="text-slate-400 font-light">
-                      Historical value tracking will be available as the NFT gains more activity.
+                      Historical value tracking will be available as the NFT
+                      gains more activity.
                     </p>
                   </div>
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
 
-          {/* AI Insights Tab */}
-          <TabsContent value="insights" className="space-y-8">
             <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
               <CardHeader>
-                <CardTitle className="text-white font-light text-xl">Available AI Insights</CardTitle>
+                <CardTitle className="text-white font-light text-xl">
+                  How NFT Value Increases
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-slate-800/50 border border-slate-700 flex items-center justify-center mx-auto mb-3">
+                      <Download className="h-6 w-6 text-slate-400" />
+                    </div>
+                    <h4 className="font-light text-white mb-2">Downloads</h4>
+                    <p className="text-sm text-slate-400 font-light">
+                      Each download increases the NFT value based on usage
+                      metrics
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-slate-800/50 border border-slate-700 flex items-center justify-center mx-auto mb-3">
+                      <Heart className="h-6 w-6 text-slate-400" />
+                    </div>
+                    <h4 className="font-light text-white mb-2">
+                      Community Engagement
+                    </h4>
+                    <p className="text-sm text-slate-400 font-light">
+                      Likes, stars, and community interaction boost NFT value
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-slate-800/50 border border-slate-700 flex items-center justify-center mx-auto mb-3">
+                      <BarChart3 className="h-6 w-6 text-slate-400" />
+                    </div>
+                    <h4 className="font-light text-white mb-2">Quality</h4>
+                    <p className="text-sm text-slate-400 font-light">
+                      High-quality datasets with good ratings increase in value
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Community Tab */}
+          <TabsContent value="community" className="space-y-8">
+            <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-white font-light text-xl">
+                  Community Feedback
+                </CardTitle>
                 <CardDescription className="text-slate-400 font-light">
-                  AI-generated insights and analysis for this dataset
+                  Reviews and discussions from the community
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-12">
-                  <BarChart3 className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-light text-white mb-2">Generate Your First Insight</h3>
-                  <p className="text-slate-400 mb-6 font-light">
-                    Use our AI tools to analyze this dataset and generate actionable insights.
+                  <Users className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-light text-white mb-2">
+                    Community Features Coming Soon
+                  </h3>
+                  <p className="text-slate-400 font-light">
+                    Reviews, discussions, and community features will be
+                    available in the next update.
                   </p>
-                  <Link href={`/insights?dataset=${mockDataset.id}`}>
-                    <Button className="bg-white text-black hover:bg-slate-100 font-medium">
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      Generate AI Insights
-                    </Button>
-                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -686,5 +1085,5 @@ pip install dehug`}</code>
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

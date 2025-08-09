@@ -101,7 +101,7 @@ export function Header() {
                   </NavigationMenuLink>
                   <NavigationMenuLink asChild>
                     <Link
-                      href="/admin"
+                      href="/dashboard"
                       className="flex items-center space-x-4 p-4 hover:bg-slate-800/30 transition-colors group"
                     >
                       <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">

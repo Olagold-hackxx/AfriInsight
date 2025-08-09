@@ -21,7 +21,6 @@ import {
   FileText,
   BarChart3,
   Shield,
-  Lock,
   Unlock,
   AlertTriangle,
   Coins,
@@ -31,81 +30,16 @@ import {
   GitBranch,
   Users,
   Zap,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { DownloadStatsComponent } from "@/components/ui/download-stats";
 import { DownloadButton } from "@/components/ui/download-button";
 import { DeHugAPI } from "@/lib/api";
-
-// Mock model data
-const mockModel = {
-  id: "1",
-  title: "GPT-2 Small Fine-tuned",
-  description:
-    "A fine-tuned GPT-2 model for creative writing with enhanced storytelling capabilities. This model has been trained on a curated dataset of literature and creative writing samples to improve its ability to generate coherent, engaging narratives.",
-  category: "Natural Language Processing",
-  task: "Text Generation",
-  author: "openai-community",
-  authorAddress: "0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4",
-  uploadDate: "2024-01-15",
-  lastUpdated: "2024-01-20",
-  downloads: 124700,
-  size: "548 MB",
-  format: "PyTorch",
-  license: "MIT",
-  tags: ["gpt-2", "text-generation", "creative-writing", "fine-tuned"],
-  likes: 2340,
-  rating: 4.8,
-  reviews: 156,
-  accessLevel: "public",
-  ipfsHash: "QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
-  nftDetails: {
-    tokenId: "0x1a2b3c4d",
-    currentValue: "2.4 ETH",
-    initialValue: "0.1 ETH",
-    contractAddress: "0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4",
-    owner: "0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4",
-  },
-  files: [
-    { name: "pytorch_model.bin", size: "510 MB", type: "Model Weights" },
-    { name: "config.json", size: "2 KB", type: "Configuration" },
-    { name: "tokenizer.json", size: "466 KB", type: "Tokenizer" },
-    { name: "README.md", size: "8 KB", type: "Documentation" },
-  ],
-  usage: {
-    pythonCode: `from transformers import GPT2LMHeadModel, GPT2Tokenizer
-
-# Load model and tokenizer
-model = GPT2LMHeadModel.from_pretrained("openai-community/gpt2-small-finetuned")
-tokenizer = GPT2Tokenizer.from_pretrained("openai-community/gpt2-small-finetuned")
-
-# Generate text
-input_text = "Once upon a time"
-inputs = tokenizer.encode(input_text, return_tensors="pt")
-outputs = model.generate(inputs, max_length=100, temperature=0.8)
-generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-print(generated_text)`,
-    dehugCode: `from dehug import DeHugRepository
-
-# Load model from decentralized storage
-model = DeHugRepository.load_model("openai-community/gpt2-small-finetuned")
-
-# Generate text
-output = model.generate("Once upon a time", max_length=100)
-print(output)`,
-  },
-  performance: {
-    accuracy: "85.2%",
-    latency: "45ms",
-    throughput: "120 tokens/sec",
-    memoryUsage: "2.1 GB",
-  },
-  governance: {
-    isVerified: true,
-    verificationDate: "2024-01-18",
-    verifiedBy: "DeHug Verification Committee",
-  },
-};
+import useGetContentMetadata from "@/hooks/DeHug/useGetContentMetadata";
+import useGetContent from "@/hooks/DeHug/useGetContent";
+import { useAccount } from "@/lib/thirdweb-hooks";
 
 export default function ModelDetailPage({
   params,
@@ -116,11 +50,30 @@ export default function ModelDetailPage({
   const [isStarred, setIsStarred] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
+  const { isConnected } = useAccount();
+  const tokenId = Number.parseInt(params.id);
+
+  // Get content data and metadata
+
+  const {
+    metadata,
+    isLoading: metadataLoading,
+    error: metadataError,
+    refetch: refetchMetadata,
+  } = useGetContentMetadata(tokenId);
+
+  const isLoading = metadataLoading;
+  const error = metadataError;
+
+  // // Check if this is a model (contentType === 1)
+  // const isModel = metadata?.contentType === 1
+
   const handleDownload = async () => {
+    if (!metadata) return;
     try {
       await DeHugAPI.downloadFromFilecoin(
-        mockModel.title,
-        mockModel.ipfsHash,
+        metadata.title,
+        metadata.ipfsHash,
         "ui"
       );
     } catch (error) {
@@ -128,9 +81,149 @@ export default function ModelDetailPage({
     }
   };
 
-  const handleUseInference = () => {
-    console.log("Starting inference...");
+  const refetch = () => {
+    refetchMetadata();
   };
+
+  // Wallet connection check
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
+        <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800 p-8 text-center max-w-md">
+          <CardContent>
+            <AlertCircle className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+            <h3 className="text-xl font-light text-white mb-2">
+              Wallet Required
+            </h3>
+            <p className="text-slate-400 font-light mb-6">
+              Please connect your wallet to view model details.
+            </p>
+            <Button className="bg-white text-black hover:bg-slate-100 font-medium">
+              Connect Wallet
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
+        <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800 p-8 text-center">
+          <CardContent>
+            <Loader2 className="h-16 w-16 text-slate-400 mx-auto mb-4 animate-spin" />
+            <h3 className="text-xl font-light text-white mb-2">
+              Loading Model
+            </h3>
+            <p className="text-slate-400 font-light">
+              Fetching model details from blockchain...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error state or not a model
+  if (error || !metadata) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
+        <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800 p-8 text-center max-w-md">
+          <CardContent>
+            <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
+            <h3 className="text-xl font-light text-white mb-2">
+              Model Not Found
+            </h3>
+            <p className="text-slate-400 font-light mb-6">
+              {error || "The requested model could not be found or loaded."}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button
+                variant="outline"
+                onClick={refetch}
+                className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50"
+              >
+                Try Again
+              </Button>
+              <Link href="/models">
+                <Button className="bg-white text-black hover:bg-slate-100 font-medium">
+                  Browse Models
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Extract data from content and metadata
+  const properties = metadata?.properties || {};
+  const title = metadata?.name || `Model #${params.id}`;
+  const description =
+    
+    metadata?.description ||
+    "No description available";
+  const category = properties.category || "Machine Learning";
+  const task = properties.task || "Text Generation";
+  const author = `${metadata.uploader?.slice(
+    0,
+    6
+  )}...${metadata.uploader?.slice(-4)}`;
+  const uploadDate = new Date(metadata.uploadTimestamp * 1000);
+  const downloads = metadata.downloadCount;
+  const likes = Math.floor(metadata.totalPointsEarned / 10);
+  const isVerified = metadata.qualityTier === 2;
+  const size = properties.size || "Unknown";
+  const format = properties.format || "PyTorch";
+  const license = properties.license || "MIT";
+  const framework = properties.framework || "transformers";
+  const tags = properties.tags || ["blockchain", "decentralized", "ai-model"];
+  const rating =
+    metadata.qualityTier === 2
+      ? 4.8
+      : metadata.qualityTier === 1
+      ? 4.2
+      : 3.5;
+  const nftValue =
+    metadata.qualityTier === 2
+      ? "2.4 ETH"
+      : metadata.qualityTier === 1
+      ? "1.2 ETH"
+      : "0.5 ETH";
+
+  // Mock files data
+  const files = [
+    { name: "model.bin", size: size, type: "Model Weights" },
+    { name: "config.json", size: "2 KB", type: "Configuration" },
+    { name: "tokenizer.json", size: "466 KB", type: "Tokenizer" },
+    { name: "README.md", size: "8 KB", type: "Documentation" },
+  ];
+
+  // Usage code examples
+  const pythonCode = `from transformers import AutoModel, AutoTokenizer
+
+# Load model and tokenizer
+model = AutoModel.from_pretrained("${title.toLowerCase().replace(/\s+/g, "-")}")
+tokenizer = AutoTokenizer.from_pretrained("${title
+    .toLowerCase()
+    .replace(/\s+/g, "-")}")
+
+# Use the model
+inputs = tokenizer("Hello world", return_tensors="pt")
+outputs = model(**inputs)
+print(outputs)`;
+
+  const dehugCode = `from dehug import DeHugRepository
+
+# Load model from decentralized storage
+model = DeHugRepository.load_model("${metadata.ipfsHash}")
+
+# Use the model
+output = model.predict("Hello world")
+print(output)`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white">
@@ -144,9 +237,9 @@ export default function ModelDetailPage({
                   variant="outline"
                   className="mr-3 border-slate-700 text-slate-300 bg-slate-800/30"
                 >
-                  {mockModel.task}
+                  {task}
                 </Badge>
-                {mockModel.governance.isVerified && (
+                {isVerified && (
                   <Badge className="mr-3 bg-slate-700 text-slate-200 border-slate-600">
                     <Shield className="h-3 w-3 mr-1" />
                     Verified
@@ -156,44 +249,13 @@ export default function ModelDetailPage({
                   variant="outline"
                   className="border-slate-700 text-slate-300 bg-slate-800/30"
                 >
-                  {mockModel.accessLevel === "public" ? (
-                    <>
-                      <Unlock className="h-3 w-3 mr-1" />
-                      Public
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="h-3 w-3 mr-1" />
-                      Private
-                    </>
-                  )}
+                  <Unlock className="h-3 w-3 mr-1" />
+                  Public
                 </Badge>
               </div>
               <h1 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight">
-                {mockModel.title}
+                {title}
               </h1>
-              <p className="text-xl text-slate-300 mb-6 font-light leading-relaxed max-w-4xl">
-                {mockModel.description}
-              </p>
-
-              <div className="flex items-center text-sm text-slate-400 space-x-6 font-light">
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2" />
-                  {mockModel.author}
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Updated {new Date(mockModel.lastUpdated).toLocaleDateString()}
-                </div>
-                {/* <div className="flex items-center">
-                  <Download className="h-4 w-4 mr-2" />
-                  {mockModel.downloads.toLocaleString()} downloads
-                </div> */}
-                <div className="flex items-center">
-                  <Heart className="h-4 w-4 mr-2" />
-                  {mockModel.likes.toLocaleString()} likes
-                </div>
-              </div>
             </div>
 
             <div className="flex items-center space-x-3">
@@ -232,15 +294,14 @@ export default function ModelDetailPage({
                 Share
               </Button>
               <DownloadButton
-                itemName={mockModel.title}
-                ipfsHash={mockModel.ipfsHash}
+                itemName={title}
+                ipfsHash={metadata.ipfsHash}
                 className="bg-white text-black hover:bg-slate-100 font-medium"
                 onDownloadComplete={() => {
-                  // Optionally refresh stats or show notification
                   console.log("Download completed successfully");
                 }}
               />
-              <Link href={`/models/${mockModel.id}/playground`}>
+              <Link href={`/models/${params.id}/playground`}>
                 <Button className="bg-slate-700 text-white hover:bg-slate-600 font-medium">
                   <Play className="h-4 w-4 mr-2" />
                   Use Model
@@ -249,6 +310,27 @@ export default function ModelDetailPage({
             </div>
           </div>
 
+          <div className="flex w-full items-center text-sm text-slate-400 space-x-6 py-4 font-light">
+            <div className="flex items-center">
+              <User className="h-4 w-4 mr-2" />
+              {author}
+            </div>
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2" />
+              Updated {uploadDate.toLocaleDateString()}
+            </div>
+            <div className="flex items-center">
+              <DownloadStatsComponent
+                itemName={title}
+                className="lg:col-span-2"
+                showDetailed={true}
+              />
+            </div>
+            <div className="flex items-center">
+              <Heart className="h-4 w-4 mr-2" />
+              {likes.toLocaleString()} likes
+            </div>
+          </div>
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
@@ -258,9 +340,7 @@ export default function ModelDetailPage({
                     <p className="text-sm text-slate-400 font-light">
                       File Size
                     </p>
-                    <p className="text-lg font-light text-white">
-                      {mockModel.size}
-                    </p>
+                    <p className="text-lg font-light text-white">{size}</p>
                   </div>
                   <FileText className="h-6 w-6 text-slate-400" />
                 </div>
@@ -272,9 +352,7 @@ export default function ModelDetailPage({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-400 font-light">Rating</p>
-                    <p className="text-lg font-light text-white">
-                      {mockModel.rating}/5
-                    </p>
+                    <p className="text-lg font-light text-white">{rating}/5</p>
                   </div>
                   <Star className="h-6 w-6 text-yellow-400" />
                 </div>
@@ -286,9 +364,7 @@ export default function ModelDetailPage({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-400 font-light">License</p>
-                    <p className="text-lg font-light text-white">
-                      {mockModel.license}
-                    </p>
+                    <p className="text-lg font-light text-white">{license}</p>
                   </div>
                   <Shield className="h-6 w-6 text-slate-400" />
                 </div>
@@ -300,9 +376,7 @@ export default function ModelDetailPage({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-400 font-light">Format</p>
-                    <p className="text-lg font-light text-white">
-                      {mockModel.format}
-                    </p>
+                    <p className="text-lg font-light text-white">{format}</p>
                   </div>
                   <FileText className="h-6 w-6 text-slate-400" />
                 </div>
@@ -317,7 +391,7 @@ export default function ModelDetailPage({
                       NFT Value
                     </p>
                     <p className="text-lg font-light text-amber-400">
-                      {mockModel.nftDetails.currentValue}
+                      {nftValue}
                     </p>
                   </div>
                   <Coins className="h-6 w-6 text-amber-400" />
@@ -325,11 +399,6 @@ export default function ModelDetailPage({
               </CardContent>
             </Card>
           </div>
-          <DownloadStatsComponent
-            itemName={mockModel.title}
-            className="lg:col-span-2"
-            showDetailed={true}
-          />
         </div>
 
         {/* Tabs */}
@@ -389,8 +458,8 @@ export default function ModelDetailPage({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-slate-300 mb-6 font-light leading-relaxed">
-                      {mockModel.description}
+                    <p className="text-slate-300 whitespace-pre-wrap mb-6 font-light leading-relaxed">
+                      {description}
                     </p>
 
                     <div className="space-y-4">
@@ -399,14 +468,10 @@ export default function ModelDetailPage({
                           Key Features:
                         </h4>
                         <ul className="text-sm text-slate-300 space-y-2 font-light">
-                          <li>
-                            • Fine-tuned on curated creative writing dataset
-                          </li>
-                          <li>• Enhanced narrative coherence and creativity</li>
-                          <li>
-                            • Optimized for story generation and creative tasks
-                          </li>
-                          <li>• Compatible with Hugging Face transformers</li>
+                          <li>• Deployed on decentralized infrastructure</li>
+                          <li>• Backed by blockchain technology</li>
+                          <li>• Community verified and rated</li>
+                          <li>• Compatible with standard ML frameworks</li>
                           <li>• Supports various generation parameters</li>
                         </ul>
                       </div>
@@ -416,11 +481,11 @@ export default function ModelDetailPage({
                           Use Cases:
                         </h4>
                         <ul className="text-sm text-slate-300 space-y-2 font-light">
-                          <li>• Creative writing assistance</li>
-                          <li>• Story and narrative generation</li>
-                          <li>• Content creation for games and media</li>
-                          <li>• Educational writing tools</li>
-                          <li>• Research in creative AI</li>
+                          <li>• Machine learning research</li>
+                          <li>• Production AI applications</li>
+                          <li>• Educational purposes</li>
+                          <li>• Fine-tuning and transfer learning</li>
+                          <li>• Benchmarking and evaluation</li>
                         </ul>
                       </div>
                     </div>
@@ -436,7 +501,7 @@ export default function ModelDetailPage({
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {mockModel.tags.map((tag) => (
+                      {tags.map((tag) => (
                         <Badge
                           key={tag}
                           variant="outline"
@@ -462,7 +527,7 @@ export default function ModelDetailPage({
                     <div className="space-y-4">
                       <div>
                         <p className="font-light text-white text-lg">
-                          {mockModel.author}
+                          {author}
                         </p>
                         <p className="text-sm text-slate-400 font-light">
                           Community Contributor
@@ -470,8 +535,8 @@ export default function ModelDetailPage({
                       </div>
                       <div className="text-xs text-slate-500 font-light">
                         <p>
-                          Wallet: {mockModel.authorAddress.slice(0, 6)}...
-                          {mockModel.authorAddress.slice(-4)}
+                          Wallet: {metadata.uploader?.slice(0, 6)}...
+                          {metadata.uploader?.slice(-4)}
                         </p>
                       </div>
                       <Button
@@ -494,26 +559,32 @@ export default function ModelDetailPage({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between text-sm font-light">
+                      <span className="text-slate-400">Token ID:</span>
+                      <code className="text-xs text-slate-300">
+                        {params.id}
+                      </code>
+                    </div>
+                    <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">IPFS Hash:</span>
                       <code className="text-xs text-slate-300">
-                        {mockModel.ipfsHash.slice(0, 8)}...
+                        {metadata?.ipfsHash?.slice(0, 8)}...
                       </code>
                     </div>
                     <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">Upload Date:</span>
                       <span className="text-slate-300">
-                        {new Date(mockModel.uploadDate).toLocaleDateString()}
+                        {uploadDate.toLocaleDateString()}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">File Count:</span>
                       <span className="text-slate-300">
-                        {mockModel.files.length} files
+                        {files.length} files
                       </span>
                     </div>
                     <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">Total Size:</span>
-                      <span className="text-slate-300">{mockModel.size}</span>
+                      <span className="text-slate-300">{size}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -526,19 +597,16 @@ export default function ModelDetailPage({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light"
-                    >
-                      <Link
-                        href={`/models/${mockModel.id}/playground`}
-                        className="flex justify-center items-center w-full"
+                    <Link href={`/models/${params.id}/playground`}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 font-light"
                       >
                         <Zap className="h-4 w-4 mr-2" />
                         Try in Playground
-                      </Link>
-                    </Button>
+                      </Button>
+                    </Link>
                     <Button
                       variant="outline"
                       size="sm"
@@ -592,7 +660,7 @@ export default function ModelDetailPage({
                       </span>
                     </div>
                     <pre className="text-slate-300 text-sm leading-relaxed font-mono overflow-x-auto">
-                      <code>{mockModel.usage.pythonCode}</code>
+                      <code>{pythonCode}</code>
                     </pre>
                   </div>
                 </CardContent>
@@ -618,7 +686,7 @@ export default function ModelDetailPage({
                       </span>
                     </div>
                     <pre className="text-slate-300 text-sm leading-relaxed font-mono overflow-x-auto">
-                      <code>{mockModel.usage.dehugCode}</code>
+                      <code>{dehugCode}</code>
                     </pre>
                   </div>
                 </CardContent>
@@ -658,7 +726,7 @@ pip install dehug`}</code>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {mockModel.files.map((file, index) => (
+                  {files.map((file, index) => (
                     <div
                       key={index}
                       className="flex items-center justify-between p-4 bg-slate-800/20 border border-slate-700"
@@ -682,8 +750,8 @@ pip install dehug`}</code>
                           Preview
                         </Button>
                         <DownloadButton
-                          itemName={`${mockModel.title}/${file.name}`}
-                          ipfsHash={mockModel.ipfsHash}
+                          itemName={`${title}/${file.name}`}
+                          ipfsHash={metadata.ipfsHash}
                           size="sm"
                           className="bg-white text-black hover:bg-slate-100 font-medium"
                         />
@@ -701,7 +769,7 @@ pip install dehug`}</code>
               <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                 <CardContent className="p-6 text-center">
                   <div className="text-3xl font-light text-white mb-2">
-                    {mockModel.performance.accuracy}
+                    85.2%
                   </div>
                   <div className="text-slate-400 font-light">Accuracy</div>
                 </CardContent>
@@ -709,7 +777,7 @@ pip install dehug`}</code>
               <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                 <CardContent className="p-6 text-center">
                   <div className="text-3xl font-light text-white mb-2">
-                    {mockModel.performance.latency}
+                    45ms
                   </div>
                   <div className="text-slate-400 font-light">Latency</div>
                 </CardContent>
@@ -717,7 +785,7 @@ pip install dehug`}</code>
               <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                 <CardContent className="p-6 text-center">
                   <div className="text-3xl font-light text-white mb-2">
-                    {mockModel.performance.throughput}
+                    120/sec
                   </div>
                   <div className="text-slate-400 font-light">Throughput</div>
                 </CardContent>
@@ -725,7 +793,7 @@ pip install dehug`}</code>
               <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
                 <CardContent className="p-6 text-center">
                   <div className="text-3xl font-light text-white mb-2">
-                    {mockModel.performance.memoryUsage}
+                    2.1 GB
                   </div>
                   <div className="text-slate-400 font-light">Memory Usage</div>
                 </CardContent>
@@ -772,31 +840,33 @@ pip install dehug`}</code>
                       <span className="text-amber-200/80 font-light text-sm">
                         Token ID:
                       </span>
-                      <p className="text-white font-mono">
-                        {mockModel.nftDetails.tokenId}
-                      </p>
+                      <p className="text-white font-mono">#{params.id}</p>
                     </div>
                     <div>
                       <span className="text-amber-200/80 font-light text-sm">
                         Current Value:
                       </span>
                       <p className="text-amber-400 font-medium text-lg">
-                        {mockModel.nftDetails.currentValue}
+                        {nftValue}
                       </p>
                     </div>
                     <div>
                       <span className="text-amber-200/80 font-light text-sm">
                         Initial Value:
                       </span>
-                      <p className="text-amber-200">
-                        {mockModel.nftDetails.initialValue}
-                      </p>
+                      <p className="text-amber-200">0.1 ETH</p>
                     </div>
                     <div>
                       <span className="text-amber-200/80 font-light text-sm">
                         Growth:
                       </span>
-                      <p className="text-green-400 font-medium">+2300%</p>
+                      <p className="text-green-400 font-medium">
+                        +
+                        {Math.round(
+                          ((Number.parseFloat(nftValue) - 0.1) / 0.1) * 100
+                        )}
+                        %
+                      </p>
                     </div>
                   </div>
                   <div>
@@ -804,7 +874,7 @@ pip install dehug`}</code>
                       Contract Address:
                     </span>
                     <p className="text-white font-mono text-xs break-all">
-                      {mockModel.nftDetails.contractAddress}
+                      {process.env.DEHUG_ADDRESS}
                     </p>
                   </div>
                   <div>
@@ -812,8 +882,8 @@ pip install dehug`}</code>
                       Owner:
                     </span>
                     <p className="text-white font-mono text-xs">
-                      {mockModel.nftDetails.owner.slice(0, 6)}...
-                      {mockModel.nftDetails.owner.slice(-4)}
+                      {metadata.uploader?.slice(0, 6)}...
+                      {metadata.uploader?.slice(-4)}
                     </p>
                   </div>
                 </CardContent>
