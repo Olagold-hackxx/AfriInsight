@@ -21,11 +21,11 @@ const ConnectWallet = ({ onConnect, label = "Connect Wallet" }: ConnectWalletPro
   const origin =
     typeof window !== "undefined"
       ? window.location.origin
-      : "https://craftlinkhq.com";
+      : "https://dehug.vercel.app";
       
   const metadata = {
-    name: "craftLink",
-    description: "The Future of Decentralized Commerce",
+    name: "DeHug",
+    description: "Decentralized Machine Learning Hub",
     url: origin,
     icons: ["https://assets.reown.com/reown-profile-pic.png"],
   };
@@ -68,7 +68,7 @@ const ConnectWallet = ({ onConnect, label = "Connect Wallet" }: ConnectWalletPro
           chains={[filecoinCalibrationTestnet]} // Restrict to only Filecoin Calibration Testnet
           theme={darkTheme({
             colors: {
-              primaryButtonBg: "#FFD700",
+              primaryButtonBg: "hsl(var(--primary))",
             },
           })}
         />
@@ -84,7 +84,7 @@ const ConnectWallet = ({ onConnect, label = "Connect Wallet" }: ConnectWalletPro
           chains={[filecoinCalibrationTestnet]} // Restrict to only Filecoin Calibration Testnet
           theme={darkTheme({
             colors: {
-              primaryButtonBg: "#FFD700",
+              primaryButtonBg: "hsl(var(--primary))",
             },
           })}
         />

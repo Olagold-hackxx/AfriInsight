@@ -120,7 +120,7 @@ export function Header() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex relative lg:left-8 items-end justify-end">
           {/* <Button 
             variant="outline" 
             size="sm" 
