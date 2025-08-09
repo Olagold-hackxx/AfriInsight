@@ -13,6 +13,7 @@ import useGetUserContent from "@/hooks/DeHug/useGetUserContent"
 import { useActiveAccount } from "thirdweb/react"
 import useGetContent from "@/hooks/DeHug/useGetContent"
 import useIPFS from "@/hooks/useIPFS"
+import useGetLatestModels from "@/hooks/useGetLatestModels"
 
 // Mock data for ML models
 const mockModels = [
@@ -118,6 +119,9 @@ export default function ModelsPage() {
   const [sortBy, setSortBy] = useState("trending")
   const account = useActiveAccount();
 
+  const { models } = useGetLatestModels();
+  console.log("Models:", models);
+
   if (!account) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-950 text-white">
@@ -125,16 +129,6 @@ export default function ModelsPage() {
       </div>
     )
   }
-  const { userContent } = useGetUserContent(account.address)
-  console.log("User Content:", userContent)
-
-  const { contentData } = useGetContent(1)
-  console.log("Content Data:", contentData)
-
-  const { fetchFromIPFS } = useIPFS()
-   const fetchedDetail = fetchFromIPFS(contentData?.ipfsHash || "");
-   console.log("Fetched Detail:", fetchedDetail)
-
 
   const filteredModels = mockModels.filter((model) => {
     const matchesSearch =
