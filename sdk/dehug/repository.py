@@ -5,13 +5,10 @@ from typing import Dict, List, Any, Optional, Union
 import json
 
 from .exceptions import (
-    DeHugError,
-    NetworkError,
     ModelNotFoundError,
-    DatasetNotFoundError,
 )
 from .utils import load_content_from_cid, download_from_ipfs
-
+from pathlib import Path
 
 class DeHugRepository:
     """Repository interface for DeHug models and datasets"""
@@ -23,26 +20,23 @@ class DeHugRepository:
             config: Configuration dictionary
         """
         self.config = config
-        self.ipfs_gateway = config.get("ipfs_gateway", "https://ipfs.io/ipfs")
+        self.ipfs_gateway = config.get(
+            "ipfs_gateway", "https://gateway.pinata.cloud/ipfs"
+        )
         self.timeout = config.get("request_timeout", 60)
         self.track_api = "https://download-tracker.vercel.app"
-
 
     @staticmethod
     def _track_download(item_name: str):
         try:
             response = requests.post(
                 f"{TRACK_API}/track/download",
-                json={
-                    "item_name": item_name,
-                    "source": "sdk"
-                },
-                timeout=5
+                json={"item_name": item_name, "source": "sdk"},
+                timeout=5,
             )
             response.raise_for_status()
         except requests.RequestException as e:
             print(f"[DeHug SDK] Tracking failed: {e}")
-
 
     def load_dataset(self, cid: str, format_hint: str = None) -> Any:
         """Load dataset by name or CID
@@ -66,12 +60,12 @@ class DeHugRepository:
             Model metadata dictionary
         """
         try:
-            metadata = load_content_from_cid(name_or_cid, "json")
+            download_dir = self.config.get("download_dir", "/tmp/dehug")
+            download_path = f"{download_dir}/{name_or_cid}"
+            metadata = load_content_from_cid(name_or_cid, download_path, self.ipfs_gateway)
             return metadata
         except Exception as e:
-                raise ModelNotFoundError(f"Model metadata not found: {e}")
-      
-
+            raise ModelNotFoundError(f"Model metadata not found: {e}")
 
     def download_model_files(
         self, name_or_cid: str, download_dir: str = "./models"
@@ -93,7 +87,7 @@ class DeHugRepository:
             raise ModelNotFoundError("Model files CID not found in metadata")
 
         # Create download directory
-        from pathlib import Path
+       
 
         download_path = Path(download_dir) / (model_metadata.get("name", files_cid))
         download_path.mkdir(parents=True, exist_ok=True)

@@ -257,7 +257,7 @@ function createNFTMetadata(
     name: title,
     description: description,
     image: STATIC_NFT_IMAGE,
-    external_url: `https://your-dehug-app.vercel.app/content/${ipfsHash}`,
+    external_url: `https://dehug.vercel.app/${ipfsHash}`,
     attributes: [
       { trait_type: "Content Type", value: contentType },
       { trait_type: "Points Balance", value: 0 },

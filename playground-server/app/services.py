@@ -3,6 +3,7 @@ FastAPI backend server for AI model inference from IPFS
 Supports text generation, classification, image classification, and speech recognition
 """
 
+import shutil
 from fastapi import  HTTPException
 from logger import logger
 from .schema import (TextClassificationParams, TextGenerationParams,
@@ -20,7 +21,7 @@ model_cache: Dict[str, Dict[str, Any]] = {}
 
 # Configuration for DeHugRepository
 dehug_config = {
-    "ipfs_gateway": "https://ipfs.io/ipfs",  # Replace with the actual base URL
+    "ipfs_gateway": "https://gateway.pinata.cloud/ipfs",  # Replace with the actual base URL
     "request_timeout": 60,  # Timeout in seconds
 }
 dehug_repo = DeHugRepository(dehug_config)
@@ -100,6 +101,8 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
         model_path = await asyncio.to_thread(
             dehug_repo.load_model, model_hash
         )
+        
+        logger.info(f"Model {model_hash} downloaded to {model_path}")
 
         # Check model size
         model_size = get_model_size(model_path)

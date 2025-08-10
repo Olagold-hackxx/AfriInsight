@@ -1,14 +1,17 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Separator } from "@/components/ui/separator"
+import type React from "react";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 import {
   Brain,
   Zap,
@@ -22,118 +25,325 @@ import {
   Share,
   Heart,
   Eye,
-  GitFork,
-} from "lucide-react"
-import Link from "next/link"
-import { DeHugAPI } from "@/lib/api"
+  CheckCircle,
+  Loader2,
+  Upload,
+} from "lucide-react";
+import Link from "next/link";
+import useGetContentMetadata from "@/hooks/DeHug/useGetContentMetadata";
+import { toast } from "react-toastify";
 
-interface ModelDetails {
-  id: string
-  name: string
-  type: string
-  description: string
-  author: string
-  downloads: number
-  likes: number
-  views: number
-  forks: number
-  tags: string[]
-  modelCard: string
-  examples: string[]
+interface InferenceRequest {
+  model_hash: string;
+  task: string;
+  input_text?: string;
+  parameters: Record<string, any>;
+}
+
+interface InferenceResponse {
+  success: boolean;
+  result?: any;
+  error?: string;
+  model_info?: {
+    hash: string;
+    task: string;
+    cached: boolean;
+  };
+  processing_time?: number;
+  request_id: string;
 }
 
 export default function ModelPlaygroundPage() {
-  const params = useParams()
-  const modelId = params.id as string
+  const params = useParams();
+  const modelId = params.id as string;
 
-  const [model, setModel] = useState<ModelDetails | null>(null)
-  const [input, setInput] = useState("")
-  const [output, setOutput] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [temperature, setTemperature] = useState([0.7])
-  const [maxLength, setMaxLength] = useState([100])
-  const [topP, setTopP] = useState([0.9])
-  const [topK, setTopK] = useState([50])
-  const [history, setHistory] = useState<Array<{ input: string; output: string; timestamp: Date; parameters: any }>>([])
-  const [isLoading, setIsLoading] = useState(true)
+  // Fetch model data
+  const { metadata: contentData, isLoading: isMetadataLoading } = useGetContentMetadata(Number.parseInt(modelId));
+
+  const [model, setModel] = useState<any>(null);
+  const [input, setInput] = useState("");
+  const [output, setOutput] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [temperature, setTemperature] = useState([0.7]);
+  const [maxLength, setMaxLength] = useState([100]);
+  const [topP, setTopP] = useState([0.9]);
+  const [topK, setTopK] = useState([50]);
+  const [confidenceThreshold, setConfidenceThreshold] = useState([0.5]);
+  const [returnTimestamps, setReturnTimestamps] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [apiEndpoint, setApiEndpoint] = useState("http://localhost:8000");
+  const [history, setHistory] = useState<
+    Array<{
+      input: string;
+      output: string;
+      timestamp: Date;
+      parameters: any;
+      processingTime?: number;
+      requestId?: string;
+    }>
+  >([]);
 
   useEffect(() => {
-    loadModel()
-  }, [modelId])
+    if (contentData) {
+      // Find the model by ID
+      const modelContent = contentData.find(
+        (item: any) =>
+          item.tokenId.toString() === modelId && item.contentType === "model"
+      );
 
-  const loadModel = async () => {
-    setIsLoading(true)
-    try {
-      const modelData = await DeHugAPI.getModel(modelId)
-      setModel(modelData)
+      if (modelContent) {
+        const metadata = contentData.find(
+          (meta: any) => meta.ipfsHash === modelContent.ipfsHash
+        );
 
-      // Set example input if available
-      if (modelData.examples && modelData.examples.length > 0) {
-        setInput(modelData.examples[0])
+        if (metadata) {
+          setModel({
+            ...modelContent,
+            ...metadata,
+            hash: modelContent.ipfsHash,
+            type: metadata.category || "text-generation",
+          });
+
+          // Set example input if available
+          if (metadata.examples && metadata.examples.length > 0) {
+            setInput(metadata.examples[0]);
+          }
+        }
       }
-    } catch (error) {
-      console.error("Failed to load model:", error)
-    } finally {
-      setIsLoading(false)
     }
-  }
+  }, [contentData, modelId]);
 
   const handleGenerate = async () => {
-    if (!model || !input.trim()) return
+    if (!model || (!input.trim() && !selectedFile)) return;
 
-    setIsGenerating(true)
-
-    const parameters = {
-      temperature: temperature[0],
-      max_length: maxLength[0],
-      top_p: topP[0],
-      top_k: topK[0],
-    }
+    setIsGenerating(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      let response: Response;
+      let result: InferenceResponse;
 
-      const mockOutput = `Generated output from ${model.name}:\n\n${input}\n\nThis is a simulated response. In a real implementation, this would be the actual output from the AI model with the following parameters:\n- Temperature: ${temperature[0]}\n- Max Length: ${maxLength[0]}\n- Top P: ${topP[0]}\n- Top K: ${topK[0]}\n\nThe model would process your input and generate contextually relevant content based on its training.`
+      if (
+        model.type === "image-classification" ||
+        model.type === "speech-recognition"
+      ) {
+        if (!selectedFile) {
+          toast.error("Please select a file for this task type");
+          return;
+        }
 
-      setOutput(mockOutput)
-      setHistory((prev) => [
-        {
-          input,
-          output: mockOutput,
-          timestamp: new Date(),
-          parameters,
-        },
-        ...prev.slice(0, 9),
-      ])
+        // Handle file upload
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("model_hash", model.hash);
+        formData.append("task", model.type);
+
+        const parameters =
+          model.type === "image-classification"
+            ? { top_k: topK[0], confidence_threshold: confidenceThreshold[0] }
+            : { return_timestamps: returnTimestamps };
+
+        formData.append("parameters", JSON.stringify(parameters));
+
+        response = await fetch(`${apiEndpoint}/infer-with-files`, {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        // Handle text-based tasks
+        const requestBody: InferenceRequest = {
+          model_hash: model.hash,
+          task: model.type,
+          input_text: input,
+          parameters:
+            model.type === "text-generation"
+              ? {
+                  temperature: temperature[0],
+                  max_length: maxLength[0],
+                  top_p: topP[0],
+                  top_k: topK[0],
+                }
+              : {
+                  confidence_threshold: confidenceThreshold[0],
+                  top_k: topK[0],
+                },
+        };
+
+        response = await fetch(`${apiEndpoint}/infer`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        });
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      result = await response.json();
+
+      if (result.success) {
+        let formattedOutput = "";
+
+        if (model.type === "text-generation") {
+          formattedOutput =
+            result.result?.generated_text ||
+            result.result?.text ||
+            "No output generated";
+        } else if (model.type === "text-classification") {
+          const predictions = result.result?.predictions || [];
+          formattedOutput = predictions
+            .map(
+              (pred: any) => `${pred.label}: ${(pred.score * 100).toFixed(2)}%`
+            )
+            .join("\n");
+        } else if (model.type === "image-classification") {
+          const predictions = result.result?.predictions || [];
+          formattedOutput = predictions
+            .map(
+              (pred: any) => `${pred.label}: ${(pred.score * 100).toFixed(2)}%`
+            )
+            .join("\n");
+        } else if (model.type === "speech-recognition") {
+          formattedOutput =
+            result.result?.transcription?.text ||
+            result.result?.transcription ||
+            "No transcription available";
+        }
+
+        setOutput(formattedOutput);
+
+        setHistory((prev) => [
+          {
+            input: selectedFile ? `File: ${selectedFile.name}` : input,
+            output: formattedOutput,
+            timestamp: new Date(),
+            parameters:
+              model.type === "text-generation"
+                ? {
+                    temperature: temperature[0],
+                    max_length: maxLength[0],
+                    top_p: topP[0],
+                    top_k: topK[0],
+                  }
+                : {
+                    confidence_threshold: confidenceThreshold[0],
+                    top_k: topK[0],
+                  },
+            processingTime: result.processing_time,
+            requestId: result.request_id,
+          },
+          ...prev.slice(0, 9),
+        ]);
+
+        toast.success(
+          `Generated successfully in ${result.processing_time?.toFixed(2)}s`,
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        throw new Error(result.error || "Unknown error occurred");
+      }
     } catch (error) {
-      console.error("Generation failed:", error)
-    } finally {
-      setIsGenerating(false)
-    }
-  }
+      console.error("Generation failed:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(output)
-  }
+      toast.error(`Generation failed: ${errorMessage}`, {
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      setOutput(`Error: ${errorMessage}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(output);
+      toast.success("Output copied to clipboard", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    } catch (error) {
+      toast.error("Failed to copy to clipboard", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
 
   const handleShare = () => {
     const shareData = {
-      input,
+      input: selectedFile ? `File: ${selectedFile.name}` : input,
       output,
-      model: model?.name,
-      parameters: {
-        temperature: temperature[0],
-        max_length: maxLength[0],
-        top_p: topP[0],
-        top_k: topK[0],
-      },
+      model: model?.title,
+      parameters:
+        model?.type === "text-generation"
+          ? {
+              temperature: temperature[0],
+              max_length: maxLength[0],
+              top_p: topP[0],
+              top_k: topK[0],
+            }
+          : { confidence_threshold: confidenceThreshold[0], top_k: topK[0] },
+    };
+
+    navigator.clipboard.writeText(JSON.stringify(shareData, null, 2));
+    toast.success("Playground session copied to clipboard", {
+      position: "top-right",
+      autoClose: 3000,
+    });
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setInput(
+        `Selected file: ${file.name} (${(file.size / 1024 / 1024).toFixed(
+          2
+        )} MB)`
+      );
+      toast.info(`File selected: ${file.name}`, {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
+  };
 
-    navigator.clipboard.writeText(JSON.stringify(shareData, null, 2))
-  }
+  const testConnection = async () => {
+    try {
+      const response = await fetch(`${apiEndpoint}/health`);
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(
+          `Connection successful! Server is healthy. ${data.cached_models} models cached.`,
+          {
+            position: "top-right",
+            autoClose: 4000,
+          }
+        );
+      } else {
+        throw new Error("Server not responding");
+      }
+    } catch (error) {
+      toast.error(
+        "Could not connect to inference server. Please check the endpoint.",
+        {
+          position: "top-right",
+          autoClose: 5000,
+        }
+      );
+    }
+  };
 
-  if (isLoading) {
+  if (isMetadataLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
@@ -141,12 +351,14 @@ export default function ModelPlaygroundPage() {
           <div className="flex items-center justify-center h-64">
             <div className="flex items-center space-x-3">
               <Sparkles className="h-6 w-6 animate-spin text-blue-400" />
-              <span className="text-lg text-gray-300">Loading model playground...</span>
+              <span className="text-lg text-gray-300">
+                Loading model playground...
+              </span>
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!model) {
@@ -154,14 +366,18 @@ export default function ModelPlaygroundPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 text-white">
         <div className="relative container mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-white mb-4">Model Not Found</h1>
+            <h1 className="text-2xl font-bold text-white mb-4">
+              Model Not Found
+            </h1>
             <Link href="/models">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Browse Models</Button>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                Browse Models
+              </Button>
             </Link>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -188,11 +404,46 @@ export default function ModelPlaygroundPage() {
               <Zap className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{model.name} Playground</h1>
-              <p className="text-gray-400">Test this model with custom inputs and parameters</p>
+              <h1 className="text-2xl font-bold text-white">
+                {model.title} Playground
+              </h1>
+              <p className="text-gray-400">
+                Test this model with custom inputs and parameters
+              </p>
             </div>
           </div>
         </div>
+
+        {/* API Configuration */}
+        <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm mb-8">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              API Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <Label className="text-gray-300 text-sm whitespace-nowrap">
+                Inference Server:
+              </Label>
+              <Input
+                value={apiEndpoint}
+                onChange={(e) => setApiEndpoint(e.target.value)}
+                placeholder="http://localhost:8000"
+                className="bg-gray-800/50 border-gray-700 text-white"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-gray-700 text-gray-300 hover:bg-gray-800/50 bg-transparent whitespace-nowrap"
+                onClick={testConnection}
+              >
+                Test Connection
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Model Info Card */}
         <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm mb-8">
@@ -201,34 +452,41 @@ export default function ModelPlaygroundPage() {
               <div className="flex items-center gap-4">
                 <Brain className="h-8 w-8 text-blue-400" />
                 <div>
-                  <CardTitle className="text-white text-xl">{model.name}</CardTitle>
+                  <CardTitle className="text-white text-xl">
+                    {model.title}
+                  </CardTitle>
                   <p className="text-gray-400">{model.description}</p>
-                  <p className="text-sm text-gray-500 mt-1">by {model.author}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    by {model.author}
+                  </p>
+                  <p className="text-xs text-gray-500 font-mono mt-1">
+                    Model Hash: {model.hash}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-6 text-sm text-gray-400">
                 <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
-                  <span>{model.views.toLocaleString()}</span>
+                  <span>{model.views?.toLocaleString() || 0}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Download className="h-4 w-4" />
-                  <span>{model.downloads.toLocaleString()}</span>
+                  <span>{model.downloads?.toLocaleString() || 0}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Heart className="h-4 w-4" />
-                  <span>{model.likes.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <GitFork className="h-4 w-4" />
-                  <span>{model.forks.toLocaleString()}</span>
+                  <span>{model.likes?.toLocaleString() || 0}</span>
                 </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 mt-4">
               <Badge className="bg-blue-600 text-white">{model.type}</Badge>
-              {model.tags.map((tag) => (
-                <Badge key={tag} variant="outline" className="border-gray-600 text-gray-300">
+              {model.tags?.map((tag: string) => (
+                <Badge
+                  key={tag}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300"
+                >
                   {tag}
                 </Badge>
               ))}
@@ -248,13 +506,19 @@ export default function ModelPlaygroundPage() {
                     Input
                   </CardTitle>
                   <div className="flex gap-2">
-                    {model.examples.map((example, index) => (
+                    {model.examples?.map((example: string, index: number) => (
                       <Button
                         key={index}
                         variant="outline"
                         size="sm"
                         className="border-gray-700 text-gray-300 hover:bg-gray-800/50 text-xs bg-transparent"
-                        onClick={() => setInput(example)}
+                        onClick={() => {
+                          setInput(example);
+                          toast.info(`Example ${index + 1} loaded`, {
+                            position: "top-right",
+                            autoClose: 2000,
+                          });
+                        }}
                       >
                         Example {index + 1}
                       </Button>
@@ -263,22 +527,100 @@ export default function ModelPlaygroundPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Textarea
-                  placeholder="Enter your prompt here..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  className="min-h-[150px] bg-gray-800/50 border-gray-700 text-white placeholder-gray-400 resize-none"
-                />
+                {model.type === "image-classification" ? (
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label htmlFor="image-upload" className="cursor-pointer">
+                        <div className="flex flex-col items-center">
+                          <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                          <p className="text-gray-400">
+                            Upload an image to classify
+                          </p>
+                          <Button
+                            variant="outline"
+                            className="mt-2 border-gray-700 text-gray-300 hover:bg-gray-800/50 bg-transparent"
+                            asChild
+                          >
+                            <span>Choose Image File</span>
+                          </Button>
+                        </div>
+                      </label>
+                    </div>
+                    {selectedFile && (
+                      <div className="flex items-center gap-2 text-sm text-gray-300">
+                        <CheckCircle className="h-4 w-4 text-green-400" />
+                        <span>
+                          {selectedFile.name} (
+                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : model.type === "speech-recognition" ? (
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center">
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        id="audio-upload"
+                      />
+                      <label htmlFor="audio-upload" className="cursor-pointer">
+                        <div className="flex flex-col items-center">
+                          <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                          <p className="text-gray-400">
+                            Upload an audio file to transcribe
+                          </p>
+                          <Button
+                            variant="outline"
+                            className="mt-2 border-gray-700 text-gray-300 hover:bg-gray-800/50 bg-transparent"
+                            asChild
+                          >
+                            <span>Choose Audio File</span>
+                          </Button>
+                        </div>
+                      </label>
+                    </div>
+                    {selectedFile && (
+                      <div className="flex items-center gap-2 text-sm text-gray-300">
+                        <CheckCircle className="h-4 w-4 text-green-400" />
+                        <span>
+                          {selectedFile.name} (
+                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Textarea
+                    placeholder="Enter your prompt here..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    className="min-h-[150px] bg-gray-800/50 border-gray-700 text-white placeholder-gray-400 resize-none"
+                  />
+                )}
                 <div className="flex justify-between items-center mt-4">
-                  <span className="text-sm text-gray-400">{input.length} characters</span>
+                  <span className="text-sm text-gray-400">
+                    {selectedFile
+                      ? `File: ${selectedFile.name}`
+                      : `${input.length} characters`}
+                  </span>
                   <Button
                     onClick={handleGenerate}
-                    disabled={!input.trim() || isGenerating}
+                    disabled={(!input.trim() && !selectedFile) || isGenerating}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {isGenerating ? (
                       <>
-                        <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Generating...
                       </>
                     ) : (
@@ -335,13 +677,20 @@ export default function ModelPlaygroundPage() {
               <CardContent>
                 {output ? (
                   <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-                    <pre className="text-gray-300 whitespace-pre-wrap text-sm font-mono">{output}</pre>
+                    <pre className="text-gray-300 whitespace-pre-wrap text-sm font-mono">
+                      {output}
+                    </pre>
                   </div>
                 ) : (
                   <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-12 text-center">
                     <Sparkles className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-white mb-2">Ready to Generate</h3>
-                    <p className="text-gray-400">Enter your input above and click Generate to see the model output</p>
+                    <h3 className="text-lg font-medium text-white mb-2">
+                      Ready to Generate
+                    </h3>
+                    <p className="text-gray-400">
+                      Enter your input above and click Generate to see the model
+                      output
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -358,7 +707,9 @@ export default function ModelPlaygroundPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="space-y-2">
-                    <h4 className="font-medium text-white">Input Guidelines:</h4>
+                    <h4 className="font-medium text-white">
+                      Input Guidelines:
+                    </h4>
                     <ul className="text-gray-400 space-y-1">
                       <li>• Be specific and clear in your prompts</li>
                       <li>• Provide context when needed</li>
@@ -389,43 +740,171 @@ export default function ModelPlaygroundPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div>
-                  <Label className="text-gray-300 text-sm">Temperature: {temperature[0]}</Label>
-                  <Slider
-                    value={temperature}
-                    onValueChange={setTemperature}
-                    max={2}
-                    min={0}
-                    step={0.1}
-                    className="mt-2"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Controls randomness and creativity</p>
-                </div>
+                {model.type === "text-generation" && (
+                  <>
+                    <div>
+                      <Label className="text-gray-300 text-sm">
+                        Temperature: {temperature[0]}
+                      </Label>
+                      <Slider
+                        value={temperature}
+                        onValueChange={setTemperature}
+                        max={2}
+                        min={0}
+                        step={0.1}
+                        className="mt-2"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Controls randomness and creativity
+                      </p>
+                    </div>
 
-                <div>
-                  <Label className="text-gray-300 text-sm">Max Length: {maxLength[0]}</Label>
-                  <Slider
-                    value={maxLength}
-                    onValueChange={setMaxLength}
-                    max={1000}
-                    min={10}
-                    step={10}
-                    className="mt-2"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Maximum number of tokens to generate</p>
-                </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">
+                        Max Length: {maxLength[0]}
+                      </Label>
+                      <Slider
+                        value={maxLength}
+                        onValueChange={setMaxLength}
+                        max={1000}
+                        min={10}
+                        step={10}
+                        className="mt-2"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Maximum number of tokens to generate
+                      </p>
+                    </div>
 
-                <div>
-                  <Label className="text-gray-300 text-sm">Top P: {topP[0]}</Label>
-                  <Slider value={topP} onValueChange={setTopP} max={1} min={0} step={0.05} className="mt-2" />
-                  <p className="text-xs text-gray-500 mt-1">Nucleus sampling parameter</p>
-                </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">
+                        Top P: {topP[0]}
+                      </Label>
+                      <Slider
+                        value={topP}
+                        onValueChange={setTopP}
+                        max={1}
+                        min={0}
+                        step={0.05}
+                        className="mt-2"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Nucleus sampling parameter
+                      </p>
+                    </div>
 
-                <div>
-                  <Label className="text-gray-300 text-sm">Top K: {topK[0]}</Label>
-                  <Slider value={topK} onValueChange={setTopK} max={100} min={1} step={1} className="mt-2" />
-                  <p className="text-xs text-gray-500 mt-1">Limits vocabulary for each step</p>
-                </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">
+                        Top K: {topK[0]}
+                      </Label>
+                      <Slider
+                        value={topK}
+                        onValueChange={setTopK}
+                        max={100}
+                        min={1}
+                        step={1}
+                        className="mt-2"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Limits vocabulary for each step
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {model.type === "text-classification" && (
+                  <>
+                    <div>
+                      <Label className="text-gray-300 text-sm">
+                        Confidence Threshold: {confidenceThreshold[0]}
+                      </Label>
+                      <Slider
+                        value={confidenceThreshold}
+                        onValueChange={setConfidenceThreshold}
+                        max={1}
+                        min={0}
+                        step={0.05}
+                        className="mt-2"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Minimum confidence for classification
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label className="text-gray-300 text-sm">
+                        Top K: {topK[0]}
+                      </Label>
+                      <Slider
+                        value={topK}
+                        onValueChange={setTopK}
+                        max={10}
+                        min={1}
+                        step={1}
+                        className="mt-2"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Number of predictions to return
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {model.type === "image-classification" && (
+                  <>
+                    <div>
+                      <Label className="text-gray-300 text-sm">
+                        Confidence Threshold: {confidenceThreshold[0]}
+                      </Label>
+                      <Slider
+                        value={confidenceThreshold}
+                        onValueChange={setConfidenceThreshold}
+                        max={1}
+                        min={0}
+                        step={0.05}
+                        className="mt-2"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Minimum confidence for classification
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label className="text-gray-300 text-sm">
+                        Top K: {topK[0]}
+                      </Label>
+                      <Slider
+                        value={topK}
+                        onValueChange={setTopK}
+                        max={10}
+                        min={1}
+                        step={1}
+                        className="mt-2"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Number of predictions to return
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {model.type === "speech-recognition" && (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="timestamps"
+                      checked={returnTimestamps}
+                      onChange={(e) => setReturnTimestamps(e.target.checked)}
+                      className="rounded border-gray-700"
+                    />
+                    <Label
+                      htmlFor="timestamps"
+                      className="text-gray-300 text-sm"
+                    >
+                      Return Timestamps
+                    </Label>
+                  </div>
+                )}
 
                 <Separator className="bg-gray-800" />
 
@@ -433,10 +912,16 @@ export default function ModelPlaygroundPage() {
                   variant="outline"
                   className="w-full border-gray-700 text-gray-300 hover:bg-gray-800/50 bg-transparent"
                   onClick={() => {
-                    setTemperature([0.7])
-                    setMaxLength([100])
-                    setTopP([0.9])
-                    setTopK([50])
+                    setTemperature([0.7]);
+                    setMaxLength([100]);
+                    setTopP([0.9]);
+                    setTopK([50]);
+                    setConfidenceThreshold([0.5]);
+                    setReturnTimestamps(false);
+                    toast.info("Parameters reset to defaults", {
+                      position: "top-right",
+                      autoClose: 2000,
+                    });
                   }}
                 >
                   Reset to Defaults
@@ -460,21 +945,55 @@ export default function ModelPlaygroundPage() {
                         key={index}
                         className="p-3 bg-gray-800/50 border border-gray-700 rounded-lg cursor-pointer hover:bg-gray-800/70 transition-colors"
                         onClick={() => {
-                          setInput(item.input)
-                          setOutput(item.output)
-                          setTemperature([item.parameters.temperature])
-                          setMaxLength([item.parameters.max_length])
-                          setTopP([item.parameters.top_p])
-                          setTopK([item.parameters.top_k])
+                          if (!item.input.startsWith("File:")) {
+                            setInput(item.input);
+                          }
+                          setOutput(item.output);
+                          if (item.parameters.temperature !== undefined) {
+                            setTemperature([item.parameters.temperature]);
+                            setMaxLength([item.parameters.max_length]);
+                            setTopP([item.parameters.top_p]);
+                            setTopK([item.parameters.top_k]);
+                          } else {
+                            setConfidenceThreshold([
+                              item.parameters.confidence_threshold,
+                            ]);
+                            setTopK([item.parameters.top_k]);
+                          }
+                          toast.info("Loaded from history", {
+                            position: "top-right",
+                            autoClose: 2000,
+                          });
                         }}
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <span className="text-xs text-gray-400">{item.timestamp.toLocaleTimeString()}</span>
-                          <Badge variant="outline" className="border-gray-600 text-gray-400 text-xs">
-                            T: {item.parameters.temperature}
-                          </Badge>
+                          <span className="text-xs text-gray-400">
+                            {item.timestamp.toLocaleTimeString()}
+                          </span>
+                          <div className="flex gap-2">
+                            {item.processingTime && (
+                              <span className="text-xs text-blue-400">
+                                {item.processingTime.toFixed(2)}s
+                              </span>
+                            )}
+                            <Badge
+                              variant="outline"
+                              className="border-gray-600 text-gray-400 text-xs"
+                            >
+                              {model.type === "text-generation"
+                                ? `T: ${item.parameters.temperature}`
+                                : `C: ${item.parameters.confidence_threshold}`}
+                            </Badge>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-300 line-clamp-2">{item.input.substring(0, 80)}...</p>
+                        <p className="text-sm text-gray-300 line-clamp-2">
+                          {item.input.substring(0, 80)}...
+                        </p>
+                        {item.requestId && (
+                          <p className="text-xs text-gray-500 font-mono mt-1">
+                            ID: {item.requestId.substring(0, 8)}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -482,7 +1001,9 @@ export default function ModelPlaygroundPage() {
                   <div className="text-center py-8">
                     <History className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-gray-400 text-sm">No generations yet</p>
-                    <p className="text-gray-500 text-xs mt-1">Your generation history will appear here</p>
+                    <p className="text-gray-500 text-xs mt-1">
+                      Your generation history will appear here
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -491,5 +1012,5 @@ export default function ModelPlaygroundPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
