@@ -235,11 +235,11 @@ print(output)`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white">
-      <div className="container mx-auto px-6 py-12">
+      <div className="container mx-auto py-12">
         {/* Header */}
         <div className="mb-12">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6 gap-6">
-            <div className="flex-1 w-full">
+            <div className="flex-1">
               <div className="flex items-center mb-4">
                 <Badge
                   variant="outline"
@@ -264,8 +264,8 @@ print(output)`;
               <h1 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight w-full">
                 {title}
               </h1>
-              <div className="w-full mb-6">
-                <p className="text-xl text-slate-300 line-clamp-5 font-light leading-relaxed w-full max-w-none">
+              <div className=" mb-6">
+                <p className="text-lg text-slate-300 line-clamp-3 font-light leading-relaxed  max-w-4xl">
                   {description}
                 </p>
               </div>

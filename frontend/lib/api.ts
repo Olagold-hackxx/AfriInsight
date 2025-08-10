@@ -251,6 +251,200 @@ export interface SyncResult {
   error?: string;
 }
 
+
+export interface InferenceRequest {
+  model_hash: string
+  task: string
+  input_text?: string
+  parameters: Record<string, any>
+}
+
+export interface InferenceResponse {
+  success: boolean
+  result?: {
+    generated_text?: string
+    predictions?: Array<{
+      label: string
+      score: number
+    }>
+    transcription?: {
+      text: string
+      timestamps?: Array<{ start: number; end: number; text: string }>
+    }
+  }
+  error?: string
+  model_info?: {
+    hash: string
+    task: string
+    cached: boolean
+  }
+  processing_time?: number
+  request_id: string
+}
+
+export interface PlaygroundInferenceService {
+  testConnection(endpoint: string): Promise<{ healthy: boolean; cached_models: number }>
+  generateText(endpoint: string, request: InferenceRequest): Promise<InferenceResponse>
+  generateWithFile(
+    endpoint: string,
+    file: File,
+    modelHash: string,
+    task: string,
+    parameters: Record<string, any>,
+  ): Promise<InferenceResponse>
+}
+
+
+// Playground Inference Service Implementation
+export const PlaygroundInferenceService: PlaygroundInferenceService = {
+  async testConnection(endpoint: string): Promise<{ healthy: boolean; cached_models: number }> {
+    // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    try {
+      // In a real implementation, this would make an actual HTTP request
+      // const response = await fetch(`${endpoint}/health`)
+      // const data = await response.json()
+
+      // Mock response
+      return {
+        healthy: true,
+        cached_models: Math.floor(Math.random() * 10) + 5,
+      }
+    } catch (error) {
+      throw new Error("Connection failed")
+    }
+  },
+
+  async generateText(endpoint: string, request: InferenceRequest): Promise<InferenceResponse> {
+    // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000))
+
+    try {
+      // In a real implementation, this would make an actual HTTP request
+      // const response = await fetch(`${endpoint}/infer`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(request)
+      // })
+      // const result = await response.json()
+
+      // Mock response based on task type
+      const startTime = Date.now()
+      let mockResult: any
+
+      if (request.task === "text-generation") {
+        mockResult = {
+          generated_text: `Based on your input: "${request.input_text}" - This is a generated response that continues the conversation in a meaningful way. The model has been trained to understand context and provide relevant, coherent responses.`,
+        }
+      } else if (request.task === "text-classification") {
+        const sentiments = ["Positive", "Negative", "Neutral"]
+        const confidence = (0.7 + Math.random() * 0.3).toFixed(2)
+        const sentiment = sentiments[Math.floor(Math.random() * sentiments.length)]
+        mockResult = {
+          predictions: [
+            { label: sentiment, score: Number.parseFloat(confidence) },
+            { label: sentiments[(sentiments.indexOf(sentiment) + 1) % 3], score: Math.random() * 0.3 },
+            { label: sentiments[(sentiments.indexOf(sentiment) + 2) % 3], score: Math.random() * 0.2 },
+          ],
+        }
+      }
+
+      const processingTime = (Date.now() - startTime) / 1000
+
+      return {
+        success: true,
+        result: mockResult,
+        model_info: {
+          hash: request.model_hash,
+          task: request.task,
+          cached: true,
+        },
+        processing_time: processingTime,
+        request_id: `req_${Date.now()}`,
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+        request_id: `req_${Date.now()}`,
+      }
+    }
+  },
+
+  async generateWithFile(
+    endpoint: string,
+    file: File,
+    modelHash: string,
+    task: string,
+    parameters: Record<string, any>,
+  ): Promise<InferenceResponse> {
+    // Simulate file upload and processing delay
+    await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 3000))
+
+    try {
+      // In a real implementation, this would make an actual HTTP request with FormData
+      // const formData = new FormData()
+      // formData.append('file', file)
+      // formData.append('model_hash', modelHash)
+      // formData.append('task', task)
+      // formData.append('parameters', JSON.stringify(parameters))
+      //
+      // const response = await fetch(`${endpoint}/infer-with-files`, {
+      //   method: 'POST',
+      //   body: formData
+      // })
+      // const result = await response.json()
+
+      const startTime = Date.now()
+      let mockResult: any
+
+      if (task === "image-classification") {
+        mockResult = {
+          predictions: [
+            { label: "Lion", score: 0.852 },
+            { label: "Elephant", score: 0.123 },
+            { label: "Giraffe", score: 0.025 },
+          ],
+        }
+      } else if (task === "speech-recognition") {
+        mockResult = {
+          transcription: {
+            text: "Sannu da zuwa. Yaya kake? Na ji daɗi sosai.",
+            ...(parameters.return_timestamps && {
+              timestamps: [
+                { start: 0.0, end: 1.2, text: "Sannu da zuwa." },
+                { start: 1.5, end: 2.8, text: "Yaya kake?" },
+                { start: 3.0, end: 4.5, text: "Na ji daɗi sosai." },
+              ],
+            }),
+          },
+        }
+      }
+
+      const processingTime = (Date.now() - startTime) / 1000
+
+      return {
+        success: true,
+        result: mockResult,
+        model_info: {
+          hash: modelHash,
+          task: task,
+          cached: true,
+        },
+        processing_time: processingTime,
+        request_id: `req_${Date.now()}`,
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "File processing failed",
+        request_id: `req_${Date.now()}`,
+      }
+    }
+  },
+}
+
 // API Functions
 export class DeHugAPI {
   // Track download
