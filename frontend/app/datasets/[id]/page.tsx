@@ -39,6 +39,7 @@ import {
   Loader2,
   AlertCircle,
   Users,
+  Copy,
 } from "lucide-react";
 import Link from "next/link";
 import { DownloadStatsComponent } from "@/components/ui/download-stats";
@@ -46,6 +47,7 @@ import { DownloadButton } from "@/components/ui/download-button";
 import { DeHugAPI } from "@/lib/api";
 import useGetContentMetadata from "@/hooks/DeHug/useGetContentMetadata";
 import { useAccount } from "@/lib/thirdweb-hooks";
+import { toast } from "react-toastify";
 
 export default function DatasetDetailPage({
   params,
@@ -70,15 +72,12 @@ export default function DatasetDetailPage({
   const isLoading = metadataLoading;
   const error = metadataError;
 
-  // Check if this is a dataset (contentType === 0)
-  const isDataset = metadata?.contentType === 0;
-
   const handleDownload = async () => {
     if (!metadata) return;
     try {
       await DeHugAPI.downloadFromFilecoin(
-        metadata.title,
-        metadata.ipfsHash,
+        metadata.name || "Default Dataset Name",
+        metadata.properties?.ipfsHash,
         "ui"
       );
     } catch (error) {
@@ -132,7 +131,7 @@ export default function DatasetDetailPage({
   }
 
   // Error state or not a dataset
-  if (error || !metadata || !isDataset) {
+  if (error || !metadata) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
         <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800 p-8 text-center max-w-md">
@@ -142,10 +141,7 @@ export default function DatasetDetailPage({
               Dataset Not Found
             </h3>
             <p className="text-slate-400 font-light mb-6">
-              {error ||
-                (!isDataset
-                  ? "This content is not a dataset"
-                  : "The requested dataset could not be found or loaded.")}
+              {error || "The requested dataset could not be found or loaded."}
             </p>
             <div className="flex gap-3 justify-center">
               <Button
@@ -167,39 +163,53 @@ export default function DatasetDetailPage({
     );
   }
 
+  // Helper to get attribute value
+  const getAttribute = (trait: string) =>
+    metadata.attributes?.find((a: any) => a.trait_type === trait)?.value;
+
+  const qualityTierMap: { [key: string]: number } = {
+    BASIC: 0,
+    PREMIUM: 1,
+    VERIFIED: 2,
+  };
+
+  const qualityTierValue = getAttribute("Quality Tier") || "BASIC";
+  const qualityTier = qualityTierMap[qualityTierValue];
+
   // Extract data from content and metadata
-  const properties = metadata?.properties || {};
-  const title = metadata?.name || `Dataset #${params.id}`;
-  const description = metadata?.description || "No description available";
-  const category = properties.category || "Natural Language Processing";
-  const author = `${metadata.uploader?.slice(
-    0,
-    6
-  )}...${metadata.uploader?.slice(-4)}`;
-  const uploadDate = new Date(metadata.uploadTimestamp * 1000);
-  const downloads = metadata.downloadCount;
-  const likes = Math.floor(metadata.totalPointsEarned / 10);
-  const isVerified = metadata.qualityTier === 2;
+  const properties = metadata.properties || {};
+  const title = metadata.name || `Dataset #${params.id}`;
+  const description = metadata.description || "No description available";
+  const category =
+    properties.category ||
+    getAttribute("Category") ||
+    "Natural Language Processing";
+  const author = `${
+    properties.uploader?.slice(0, 6) || getAttribute("Uploader")?.slice(0, 6)
+  }...${properties.uploader?.slice(-4) || getAttribute("Uploader")?.slice(-4)}`;
+  const uploadDate = properties.uploadTimestamp
+    ? new Date(properties.uploadTimestamp)
+    : new Date(getAttribute("Upload Date") || Date.now());
+  const downloads = properties.downloadCount || getAttribute("Downloads") || 0;
+  const likes = Math.floor((getAttribute("Points Balance") || 0) / 10);
+  const isVerified = qualityTier === 2;
   const size = properties.size || "Unknown";
   const format = properties.format || "JSON Lines";
-  const license = properties.license || "CC BY 4.0";
-  const tags = properties.tags || ["blockchain", "decentralized", "dataset"];
-  const rating =
-    metadata.qualityTier === 2 ? 4.6 : metadata.qualityTier === 1 ? 4.2 : 3.8;
+  const license = properties.license || getAttribute("License") || "CC BY 4.0";
+  const tags = properties.tags ||
+    getAttribute("Tags")?.split(", ") || [
+      "blockchain",
+      "decentralized",
+      "dataset",
+    ];
+  const rating = qualityTier === 2 ? 4.6 : qualityTier === 1 ? 4.2 : 3.8;
   const nftValue =
-    metadata.qualityTier === 2
-      ? "5.2 ETH"
-      : metadata.qualityTier === 1
-      ? "2.1 ETH"
-      : "0.8 ETH";
+    qualityTier === 2 ? "5.2 ETH" : qualityTier === 1 ? "2.1 ETH" : "0.8 ETH";
   const samples =
     properties.samples ||
-    (metadata.qualityTier === 2
-      ? "2.1B"
-      : metadata.qualityTier === 1
-      ? "500M"
-      : "100M");
+    (qualityTier === 2 ? "2.1B" : qualityTier === 1 ? "500M" : "100M");
   const languages = properties.languages || ["English", "Spanish", "French"];
+  const ipfsHash = properties.ipfsHash;
 
   // Mock sample data for preview
   const sampleData = [
@@ -259,7 +269,7 @@ for sample in train_data:
   const dehugCode = `from dehug import DeHugRepository
 
 # Load dataset from decentralized storage
-dataset = DeHugRepository.load_dataset("${metadata.ipfsHash}")
+dataset = DeHugRepository.load_dataset("${ipfsHash}")
 
 # Access training data
 train_data = dataset["train"]
@@ -273,8 +283,8 @@ for sample in train_data:
       <div className="container mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-12">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6 gap-6">
+            <div className="flex-1 w-full">
               <div className="flex items-center mb-4">
                 <Badge
                   variant="outline"
@@ -296,14 +306,16 @@ for sample in train_data:
                   Public
                 </Badge>
               </div>
-              <h1 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight">
+              <h1 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight w-full">
                 {title}
               </h1>
-              <p className="text-xl text-slate-300 line-clamp-5 mb-6 font-light leading-relaxed w-full">
-                {description}
-              </p>
+              <div className="w-full mb-6">
+                <p className="text-xl text-slate-300 line-clamp-5 font-light leading-relaxed w-full max-w-none">
+                  {description}
+                </p>
+              </div>
 
-              <div className="flex w-full items-center text-sm text-slate-400 space-x-6 font-light">
+              <div className="flex flex-wrap items-center text-sm text-slate-400 gap-x-6 gap-y-2 font-light">
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-2" />
                   {author}
@@ -323,7 +335,7 @@ for sample in train_data:
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
               <Button
                 variant="outline"
                 size="sm"
@@ -360,10 +372,10 @@ for sample in train_data:
               </Button>
               <DownloadButton
                 itemName={title}
-                ipfsHash={metadata.ipfsHash}
+                ipfsHash={ipfsHash}
                 className="bg-white text-black hover:bg-slate-100 font-medium"
                 onDownloadComplete={() => {
-                  console.log("Dataset download completed successfully");
+                  toast.info("Dataset download completed successfully");
                 }}
               />
             </div>
@@ -587,7 +599,7 @@ for sample in train_data:
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {tags.map((tag) => (
+                      {tags.map((tag: string) => (
                         <Badge
                           key={tag}
                           variant="outline"
@@ -621,8 +633,12 @@ for sample in train_data:
                       </div>
                       <div className="text-xs text-slate-500 font-light">
                         <p>
-                          Wallet: {metadata.uploader?.slice(0, 6)}...
-                          {metadata.uploader?.slice(-4)}
+                          Wallet:{" "}
+                          {properties.uploader?.slice(0, 6) ||
+                            getAttribute("Uploader")?.slice(0, 6)}
+                          ...
+                          {properties.uploader?.slice(-4) ||
+                            getAttribute("Uploader")?.slice(-4)}
                         </p>
                       </div>
                       <Button
@@ -672,11 +688,26 @@ for sample in train_data:
                         {params.id}
                       </code>
                     </div>
-                    <div className="flex justify-between text-sm font-light">
+                    <div className="flex justify-between items-center text-sm font-light">
                       <span className="text-slate-400">IPFS Hash:</span>
-                      <code className="text-xs text-slate-300">
-                        {metadata?.ipfsHash?.slice(0, 8)}...
-                      </code>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs text-slate-300">
+                          {ipfsHash?.slice(0, 8)}...
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 hover:bg-slate-700/50"
+                          onClick={() => {
+                            if (ipfsHash) {
+                              navigator.clipboard.writeText(ipfsHash);
+                              toast.info("IPFS hash copied to clipboard");
+                            }
+                          }}
+                        >
+                          <Copy className="h-3 w-3 text-slate-400 hover:text-slate-300" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">Upload Date:</span>
@@ -793,9 +824,12 @@ for sample in train_data:
                   </p>
                   <DownloadButton
                     itemName={title}
-                    ipfsHash={metadata.ipfsHash}
+                    ipfsHash={ipfsHash}
                     size="sm"
                     className="bg-white text-black hover:bg-slate-100 font-medium"
+                    onDownloadComplete={() => {
+                      toast.info("Dataset downloaded successfully");
+                    }}
                   />
                 </div>
               </CardContent>
@@ -886,7 +920,8 @@ pip install dehug`}</code>
                   Dataset Files
                 </CardTitle>
                 <CardDescription className="text-slate-400 font-light">
-                  Individual files included in this dataset package
+                  Individual files included in this dataset package. Download
+                  the complete zip file using the main download button.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -914,15 +949,29 @@ pip install dehug`}</code>
                           <Eye className="h-4 w-4 mr-1" />
                           Preview
                         </Button>
-                        <DownloadButton
-                          itemName={`${title}/${file.name}`}
-                          ipfsHash={metadata.ipfsHash}
-                          size="sm"
-                          className="bg-white text-black hover:bg-slate-100 font-medium"
-                        />
                       </div>
                     </div>
                   ))}
+                </div>
+                <div className="mt-6 p-4 bg-slate-800/20 border border-slate-700 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-light text-white mb-1">
+                        Complete Dataset Package
+                      </p>
+                      <p className="text-sm text-slate-400 font-light">
+                        Download all files as a single zip archive
+                      </p>
+                    </div>
+                    <DownloadButton
+                      itemName={title}
+                      ipfsHash={ipfsHash}
+                      className="bg-white text-black hover:bg-slate-100 font-medium"
+                      onDownloadComplete={() => {
+                        toast.info("Dataset package downloaded successfully");
+                      }}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -986,8 +1035,11 @@ pip install dehug`}</code>
                       Owner:
                     </span>
                     <p className="text-white font-mono text-xs">
-                      {metadata.uploader?.slice(0, 6)}...
-                      {metadata.uploader?.slice(-4)}
+                      {properties.uploader?.slice(0, 6) ||
+                        getAttribute("Uploader")?.slice(0, 6)}
+                      ...
+                      {properties.uploader?.slice(-4) ||
+                        getAttribute("Uploader")?.slice(-4)}
                     </p>
                   </div>
                 </CardContent>

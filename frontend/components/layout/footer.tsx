@@ -8,7 +8,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="space-y-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center">
+              
+              <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center rounded-lg">
                 <Brain className="h-6 w-6 text-white" />
               </div>
               <span className="font-light text-2xl text-white">DeHug</span>

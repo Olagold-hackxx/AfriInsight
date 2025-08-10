@@ -24,7 +24,7 @@ class SpeechRecognitionParams(BaseModel):
 class InferenceRequest(BaseModel):
     model_hash: str
     task: str
-    input_text: Optional[str] = None
+    input_text: str
     parameters: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
 class InferenceResponse(BaseModel):

@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import infer, models, health
+from app.routes import router
 from config import ALLOWED_ORIGINS
-from logger import logger
 
 app = FastAPI(
     title="DeHug Inference API",
@@ -20,9 +19,8 @@ app.add_middleware(
 )
 
 # Include routes
-app.include_router(health.router)
-app.include_router(models.router)
-app.include_router(infer.router)
+app.include_router(router)
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -32,6 +32,7 @@ import {
   Zap,
   Loader2,
   AlertCircle,
+  Copy,
 } from "lucide-react";
 import Link from "next/link";
 import { DownloadStatsComponent } from "@/components/ui/download-stats";
@@ -62,6 +63,8 @@ export default function ModelDetailPage({
 
   const isLoading = metadataLoading;
   const error = metadataError;
+
+
 
   const handleDownload = async () => {
     if (!metadata) return;
@@ -121,7 +124,7 @@ export default function ModelDetailPage({
     );
   }
 
-  // Error state or no metadata
+  // Error state or not a model
   if (error || !metadata) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex items-center justify-center">
@@ -132,7 +135,8 @@ export default function ModelDetailPage({
               Model Not Found
             </h3>
             <p className="text-slate-400 font-light mb-6">
-              {error || "The requested model could not be found or loaded."}
+              {error ||
+                ("The requested model could not be found or loaded.")}
             </p>
             <div className="flex gap-3 justify-center">
               <Button
@@ -163,6 +167,7 @@ export default function ModelDetailPage({
     PREMIUM: 1,
     VERIFIED: 2,
   };
+
   const qualityTierValue = getAttribute("Quality Tier") || "BASIC";
   const qualityTier = qualityTierMap[qualityTierValue];
 
@@ -233,8 +238,8 @@ print(output)`;
       <div className="container mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-12">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6 gap-6">
+            <div className="flex-1 w-full">
               <div className="flex items-center mb-4">
                 <Badge
                   variant="outline"
@@ -256,12 +261,36 @@ print(output)`;
                   Public
                 </Badge>
               </div>
-              <h1 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight">
+              <h1 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight w-full">
                 {title}
               </h1>
+              <div className="w-full mb-6">
+                <p className="text-xl text-slate-300 line-clamp-5 font-light leading-relaxed w-full max-w-none">
+                  {description}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center text-sm text-slate-400 gap-x-6 gap-y-2 font-light">
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  {author}
+                </div>
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Updated {uploadDate.toLocaleDateString()}
+                </div>
+                <div className="flex items-center">
+                  <Download className="h-4 w-4 mr-2" />
+                  {downloads?.toLocaleString()} downloads
+                </div>
+                <div className="flex items-center">
+                  <Heart className="h-4 w-4 mr-2" />
+                  {likes.toLocaleString()} likes
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
               <Button
                 variant="outline"
                 size="sm"
@@ -313,27 +342,6 @@ print(output)`;
             </div>
           </div>
 
-          <div className="flex w-full items-center text-sm text-slate-400 space-x-6 py-4 font-light">
-            <div className="flex items-center">
-              <User className="h-4 w-4 mr-2" />
-              {author}
-            </div>
-            <div className="flex items-center">
-              <Calendar className="h-4 w-4 mr-2" />
-              Updated {uploadDate.toLocaleDateString()}
-            </div>
-            <div className="flex items-center">
-              <DownloadStatsComponent
-                itemName={title}
-                className="lg:col-span-2"
-                showDetailed={true}
-              />
-            </div>
-            <div className="flex items-center">
-              <Heart className="h-4 w-4 mr-2" />
-              {likes.toLocaleString()} likes
-            </div>
-          </div>
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
@@ -402,6 +410,11 @@ print(output)`;
               </CardContent>
             </Card>
           </div>
+          <DownloadStatsComponent
+            itemName={title}
+            className="lg:col-span-2 mt-4"
+            showDetailed={true}
+          />
         </div>
 
         {/* Tabs */}
@@ -475,6 +488,7 @@ print(output)`;
                           <li>• Backed by blockchain technology</li>
                           <li>• Community verified and rated</li>
                           <li>• Compatible with standard ML frameworks</li>
+                          <li>• Supports various generation parameters</li>
                           <li>• Supports various generation parameters</li>
                         </ul>
                       </div>
@@ -571,11 +585,26 @@ print(output)`;
                         {params.id}
                       </code>
                     </div>
-                    <div className="flex justify-between text-sm font-light">
+                    <div className="flex justify-between items-center text-sm font-light">
                       <span className="text-slate-400">IPFS Hash:</span>
-                      <code className="text-xs text-slate-300">
-                        {ipfsHash?.slice(0, 8)}...
-                      </code>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs text-slate-300">
+                          {ipfsHash?.slice(0, 8)}...
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 hover:bg-slate-700/50"
+                          onClick={() => {
+                            if (ipfsHash) {
+                              navigator.clipboard.writeText(ipfsHash);
+                              toast.info("IPFS hash copied to clipboard");
+                            }
+                          }}
+                        >
+                          <Copy className="h-3 w-3 text-slate-400 hover:text-slate-300" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex justify-between text-sm font-light">
                       <span className="text-slate-400">Upload Date:</span>
@@ -728,7 +757,8 @@ pip install dehug`}</code>
                   Model Files
                 </CardTitle>
                 <CardDescription className="text-slate-400 font-light">
-                  Individual files included in this model package
+                  Individual files included in this model package. Download the
+                  complete zip file using the main download button.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -756,15 +786,29 @@ pip install dehug`}</code>
                           <Eye className="h-4 w-4 mr-1" />
                           Preview
                         </Button>
-                        <DownloadButton
-                          itemName={`${title}/${file.name}`}
-                          ipfsHash={ipfsHash}
-                          size="sm"
-                          className="bg-white text-black hover:bg-slate-100 font-medium"
-                        />
                       </div>
                     </div>
                   ))}
+                </div>
+                <div className="mt-6 p-4 bg-slate-800/20 border border-slate-700 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-light text-white mb-1">
+                        Complete Model Package
+                      </p>
+                      <p className="text-sm text-slate-400 font-light">
+                        Download all files as a single zip archive
+                      </p>
+                    </div>
+                    <DownloadButton
+                      itemName={title}
+                      ipfsHash={ipfsHash}
+                      className="bg-white text-black hover:bg-slate-100 font-medium"
+                      onDownloadComplete={() => {
+                        toast.info("Model package downloaded successfully");
+                      }}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>

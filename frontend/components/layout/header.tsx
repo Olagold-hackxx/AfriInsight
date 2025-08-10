@@ -119,7 +119,7 @@ export function Header() {
             <NavigationMenuItem>
               <Link href="/upload" legacyBehavior passHref>
                 <NavigationMenuLink className="group inline-flex h-12 w-max items-center justify-center px-6 py-2 text-sm font-light text-slate-300 transition-colors hover:bg-slate-800/50 hover:text-white focus:bg-slate-800/50 focus:text-white focus:outline-none">
-                  Deploy
+                  Upload
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
