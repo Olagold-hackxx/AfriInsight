@@ -3,12 +3,16 @@ FastAPI backend server for AI model inference from IPFS
 Supports text generation, classification, image classification, and speech recognition
 """
 
-from fastapi import  HTTPException, UploadFile, File
+from fastapi import  HTTPException
 from logger import logger
 from .schema import (TextClassificationParams, TextGenerationParams,
                      ImageClassificationParams, SpeechRecognitionParams)
-from config import MODEL_CACHE_DIR, IPFS_GATEWAY, REQUEST_TIMEOUT, CACHE_MAX_MODELS, MAX_MODEL_SIZE
+from config import MODEL_CACHE_DIR, REQUEST_TIMEOUT, CACHE_MAX_MODELS, MAX_MODEL_SIZE
 from dehug import DeHugRepository, DeHugError, NetworkError, IPFSError
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, Any
+import asyncio
 
 
 # Global model cache and DeHug repository client
@@ -17,7 +21,7 @@ model_cache: Dict[str, Dict[str, Any]] = {}
 # Configuration for DeHugRepository
 dehug_config = {
     "ipfs_gateway": "https://ipfs.io/ipfs",  # Replace with the actual base URL
-    "timeout": 60,  # Timeout in seconds
+    "request_timeout": 60,  # Timeout in seconds
 }
 dehug_repo = DeHugRepository(dehug_config)
 
@@ -94,7 +98,7 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
         # Use DeHug SDK to download model from IPFS
         logger.info(f"Downloading model {model_hash} using DeHug SDK")
         model_path = await asyncio.to_thread(
-            dehug_repo.load_model, model_hash, Path(MODEL_CACHE_DIR) / model_hash
+            dehug_repo.load_model, model_hash
         )
 
         # Check model size
@@ -102,7 +106,7 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
         if model_size > MAX_MODEL_SIZE:
             raise HTTPException(
                 status_code=413,
-                detail=f"Model size ({model_size:.2f} MB) exceeds maximum allowed size ({MAX_MODEL_SIZE_MB} MB)",
+                detail=f"Model size ({model_size:.2f} MB) exceeds maximum allowed size ({MAX_MODEL_SIZE} MB)",
             )
 
         # Clean up old models if needed
