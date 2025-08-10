@@ -41,6 +41,7 @@ import { DeHugAPI } from "@/lib/api";
 import useGetContentMetadata from "@/hooks/DeHug/useGetContentMetadata";
 import { useAccount } from "@/lib/thirdweb-hooks";
 import { toast } from "react-toastify";
+import ReactMarkdown from "react-markdown";
 
 export default function ModelDetailPage({
   params,
@@ -63,8 +64,6 @@ export default function ModelDetailPage({
 
   const isLoading = metadataLoading;
   const error = metadataError;
-
-
 
   const handleDownload = async () => {
     if (!metadata) return;
@@ -135,8 +134,7 @@ export default function ModelDetailPage({
               Model Not Found
             </h3>
             <p className="text-slate-400 font-light mb-6">
-              {error ||
-                ("The requested model could not be found or loaded.")}
+              {error || "The requested model could not be found or loaded."}
             </p>
             <div className="flex gap-3 justify-center">
               <Button
@@ -265,9 +263,9 @@ print(output)`;
                 {title}
               </h1>
               <div className=" mb-6">
-                <p className="text-lg text-slate-300 line-clamp-3 font-light leading-relaxed  max-w-4xl">
-                  {description}
-                </p>
+                {/* <p className="text-lg text-slate-300 line-clamp-3 font-light leading-relaxed max-2xl  prose">
+                  <ReactMarkdown>{description}</ReactMarkdown>
+                </p> */}
               </div>
 
               <div className="flex flex-wrap items-center text-sm text-slate-400 gap-x-6 gap-y-2 font-light">
@@ -467,16 +465,16 @@ print(output)`;
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-8">
                 {/* Description */}
-                <Card className="bg-slate-900/20 backdrop-blur-sm border-slate-800">
+                <Card className="overflow-x-hidden bg-slate-900/20 backdrop-blur-sm border-slate-800">
                   <CardHeader>
                     <CardTitle className="text-white font-light text-xl">
                       About This Model
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-slate-300 whitespace-pre-wrap mb-6 font-light leading-relaxed">
-                      {description}
-                    </p>
+                    <div className="text-slate-300 whitespace-pre-wrap mb-6 font-light leading-relaxed prose">
+                      <ReactMarkdown>{description}</ReactMarkdown>
+                    </div>
 
                     <div className="space-y-4">
                       <div>

@@ -48,6 +48,7 @@ import { DeHugAPI } from "@/lib/api";
 import useGetContentMetadata from "@/hooks/DeHug/useGetContentMetadata";
 import { useAccount } from "@/lib/thirdweb-hooks";
 import { toast } from "react-toastify";
+import ReactMarkdown from "react-markdown";
 
 export default function DatasetDetailPage({
   params,
@@ -311,7 +312,7 @@ for sample in train_data:
               </h1>
               <div className="w-full mb-6">
                 <p className="text-xl text-slate-300 line-clamp-5 font-light leading-relaxed w-full max-w-none">
-                  {description}
+                  <ReactMarkdown>{description}</ReactMarkdown>
                 </p>
               </div>
 

@@ -33,6 +33,7 @@ import Link from "next/link";
 import useGetContentMetadata from "@/hooks/DeHug/useGetContentMetadata";
 import { toast } from "react-toastify";
 import { DeHugAPI, PlaygroundInferenceService } from "@/lib/api";
+import ReactMarkdown from "react-markdown";
 
 export default function ModelPlaygroundPage() {
   const params = useParams();
@@ -381,7 +382,9 @@ export default function ModelPlaygroundPage() {
                   <CardTitle className="text-white text-xl">
                     {model.title}
                   </CardTitle>
-                  <p className="text-gray-400">{model.description}</p>
+                  <p className="text-gray-400 line-clamp-3">
+                    <ReactMarkdown>{model.description}</ReactMarkdown>
+                  </p>
                   <p className="text-sm text-gray-500 mt-1">
                     by {model.author}
                   </p>

@@ -11,6 +11,7 @@ import Link from "next/link"
 import { DownloadStatsComponent } from "@/components/ui/download-stats"
 import { useActiveAccount } from "thirdweb/react"
 import useGetLatestModels from "@/hooks/useGetLatestModels"
+import ReactMarkdown from "react-markdown";
 
 const categories = [
   "All",
@@ -101,8 +102,9 @@ export default function ModelsPage() {
             <span className="text-slate-400 font-thin">AI Models</span>
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
-            Browse machine learning models hosted on decentralized infrastructure. Each model is backed by an NFT that
-            appreciates with usage.
+            Browse machine learning models hosted on decentralized
+            infrastructure. Each model is backed by an NFT that appreciates with
+            usage.
           </p>
         </div>
 
@@ -118,14 +120,21 @@ export default function ModelsPage() {
                 className="pl-12 bg-slate-900/30 border-slate-700 text-white placeholder:text-slate-400 focus:border-slate-500 backdrop-blur-sm h-14 text-lg"
               />
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
               <SelectTrigger className="w-full lg:w-[220px] bg-slate-900/30 border-slate-700 text-white backdrop-blur-sm h-14">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent className="bg-slate-900 border-slate-700 text-white">
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category} className="focus:bg-slate-800">
+                  <SelectItem
+                    key={category}
+                    value={category}
+                    className="focus:bg-slate-800"
+                  >
                     {category}
                   </SelectItem>
                 ))}
@@ -178,7 +187,9 @@ export default function ModelsPage() {
             <div className="w-20 h-20 bg-red-900/20 border border-red-700 flex items-center justify-center mx-auto mb-8">
               <Brain className="h-10 w-10 text-red-400" />
             </div>
-            <h3 className="text-2xl font-light text-white mb-4">Error Loading Models</h3>
+            <h3 className="text-2xl font-light text-white mb-4">
+              Error Loading Models
+            </h3>
             <p className="text-red-400 mb-8 font-light">{error}</p>
             <Button
               onClick={refetch}
@@ -195,7 +206,9 @@ export default function ModelsPage() {
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-slate-400" />
-              <p className="text-slate-400 font-light">Loading models from blockchain...</p>
+              <p className="text-slate-400 font-light">
+                Loading models from blockchain...
+              </p>
             </div>
           </div>
         )}
@@ -204,8 +217,12 @@ export default function ModelsPage() {
         {!isLoading && !error && (
           <div className="mb-8">
             <p className="text-slate-400 font-light">
-              Showing <span className="text-white font-medium">{sortedModels.length}</span> of{" "}
-              <span className="text-white font-medium">{models.length}</span> models
+              Showing{" "}
+              <span className="text-white font-medium">
+                {sortedModels.length}
+              </span>{" "}
+              of <span className="text-white font-medium">{models.length}</span>{" "}
+              models
             </p>
           </div>
         )}
@@ -224,7 +241,10 @@ export default function ModelsPage() {
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="border-slate-700 text-slate-300 bg-slate-800/30 text-xs">
+                      <Badge
+                        variant="outline"
+                        className="border-slate-700 text-slate-300 bg-slate-800/30 text-xs"
+                      >
                         {model.task}
                       </Badge>
                       {model.verified && (
@@ -249,7 +269,7 @@ export default function ModelsPage() {
                     {model.title}
                   </CardTitle>
                   <CardDescription className="text-sm text-slate-400 line-clamp-3 font-light">
-                    {model.description}
+                    <ReactMarkdown>{model.description}</ReactMarkdown>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -258,9 +278,13 @@ export default function ModelsPage() {
                     <div className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-700 rounded-lg">
                       <div className="flex items-center">
                         <Coins className="h-4 w-4 text-amber-400 mr-2" />
-                        <span className="text-sm text-slate-300 font-light">NFT Value</span>
+                        <span className="text-sm text-slate-300 font-light">
+                          NFT Value
+                        </span>
                       </div>
-                      <span className="text-amber-400 font-medium">{model.nftValue}</span>
+                      <span className="text-amber-400 font-medium">
+                        {model.nftValue}
+                      </span>
                     </div>
 
                     {/* Tags */}
@@ -275,7 +299,10 @@ export default function ModelsPage() {
                         </Badge>
                       ))}
                       {model.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs bg-slate-800/30 border-slate-700 text-slate-300">
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-slate-800/30 border-slate-700 text-slate-300"
+                        >
                           +{model.tags.length - 3}
                         </Badge>
                       )}
@@ -288,7 +315,10 @@ export default function ModelsPage() {
                         {model.author}
                       </div>
                       <div className="flex items-center">
-                        <DownloadStatsComponent itemName={model.title} className="text-xs" />
+                        <DownloadStatsComponent
+                          itemName={model.title}
+                          className="text-xs"
+                        />
                       </div>
                       <div className="flex items-center">
                         <Calendar className="h-3 w-3 mr-1" />
@@ -302,13 +332,18 @@ export default function ModelsPage() {
                     {/* Download Count */}
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-400">Downloads</span>
-                      <span className="text-white font-medium">{model.downloads.toLocaleString()}</span>
+                      <span className="text-white font-medium">
+                        {model.downloads.toLocaleString()}
+                      </span>
                     </div>
 
                     {/* Actions */}
                     <div className="flex gap-3 pt-2">
                       <Link href={`/models/${model.id}`} className="flex-1">
-                        <Button size="sm" className="w-full bg-white text-black hover:bg-slate-100 font-medium">
+                        <Button
+                          size="sm"
+                          className="w-full bg-white text-black hover:bg-slate-100 font-medium"
+                        >
                           <Eye className="h-3 w-3 mr-2" />
                           View Model
                         </Button>
@@ -337,50 +372,64 @@ export default function ModelsPage() {
             <div className="w-20 h-20 bg-slate-800/30 border border-slate-700 rounded-lg flex items-center justify-center mx-auto mb-8">
               <Brain className="h-10 w-10 text-slate-400" />
             </div>
-            <h3 className="text-2xl font-light text-white mb-4">No Models Found</h3>
-            <p className="text-slate-400 mb-8 font-light">Be the first to upload a model to the decentralized hub.</p>
+            <h3 className="text-2xl font-light text-white mb-4">
+              No Models Found
+            </h3>
+            <p className="text-slate-400 mb-8 font-light">
+              Be the first to upload a model to the decentralized hub.
+            </p>
             <Link href="/upload">
-              <Button className="bg-white text-black hover:bg-slate-100 font-medium">Upload First Model</Button>
+              <Button className="bg-white text-black hover:bg-slate-100 font-medium">
+                Upload First Model
+              </Button>
             </Link>
           </div>
         )}
 
         {/* No Search Results */}
-        {!isLoading && !error && sortedModels.length === 0 && models.length > 0 && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-slate-800/30 border border-slate-700 rounded-lg flex items-center justify-center mx-auto mb-8">
-              <Search className="h-10 w-10 text-slate-400" />
+        {!isLoading &&
+          !error &&
+          sortedModels.length === 0 &&
+          models.length > 0 && (
+            <div className="text-center py-20">
+              <div className="w-20 h-20 bg-slate-800/30 border border-slate-700 rounded-lg flex items-center justify-center mx-auto mb-8">
+                <Search className="h-10 w-10 text-slate-400" />
+              </div>
+              <h3 className="text-2xl font-light text-white mb-4">
+                No Models Match Your Search
+              </h3>
+              <p className="text-slate-400 mb-8 font-light">
+                Try adjusting your search criteria or browse all categories.
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedCategory("All");
+                  setSelectedTask("All");
+                }}
+                className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600"
+              >
+                Clear Filters
+              </Button>
             </div>
-            <h3 className="text-2xl font-light text-white mb-4">No Models Match Your Search</h3>
-            <p className="text-slate-400 mb-8 font-light">
-              Try adjusting your search criteria or browse all categories.
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchTerm("")
-                setSelectedCategory("All")
-                setSelectedTask("All")
-              }}
-              className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600"
-            >
-              Clear Filters
-            </Button>
-          </div>
-        )}
+          )}
 
         {/* Load More */}
-        {!isLoading && !error && sortedModels.length > 0 && models.length >= 20 && (
-          <div className="text-center mt-16">
-            <Button
-              onClick={() => refetch()}
-              variant="outline"
-              className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600 px-12 py-4 text-lg font-light"
-            >
-              Load More Models
-            </Button>
-          </div>
-        )}
+        {!isLoading &&
+          !error &&
+          sortedModels.length > 0 &&
+          models.length >= 20 && (
+            <div className="text-center mt-16">
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600 px-12 py-4 text-lg font-light"
+              >
+                Load More Models
+              </Button>
+            </div>
+          )}
       </div>
 
       {/* CSS for animations */}
@@ -397,5 +446,5 @@ export default function ModelsPage() {
         }
       `}</style>
     </div>
-  )
+  );
 }

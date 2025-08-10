@@ -14,7 +14,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any
 import asyncio
-
+import zipfile
 
 # Global model cache and DeHug repository client
 model_cache: Dict[str, Dict[str, Any]] = {}
@@ -101,8 +101,18 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
         model_path = await asyncio.to_thread(
             dehug_repo.load_model, model_hash
         )
-        
+
         logger.info(f"Model {model_hash} downloaded to {model_path}")
+
+        # Cache the model
+        model_cache[cache_key] = model_obj
+
+        # Unzip model is in a zip file
+        extract_dir = model_path.parent / model_path.stem
+        logger.info(f"Extracting model zip to {extract_dir}")
+        with zipfile.ZipFile(model_path, "r") as zip_ref:
+            zip_ref.extractall(extract_dir)
+        model_path = extract_dir    
 
         # Check model size
         model_size = get_model_size(model_path)
@@ -178,8 +188,6 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
         else:
             raise HTTPException(status_code=400, detail=f"Unsupported task: {task}")
 
-        # Cache the model
-        model_cache[cache_key] = model_obj
         logger.info(f"Model {cache_key} loaded and cached successfully")
 
         return model_obj

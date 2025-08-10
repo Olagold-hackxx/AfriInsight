@@ -24,6 +24,7 @@ import Link from "next/link"
 import { DownloadStatsComponent } from "@/components/ui/download-stats"
 import useGetLatestDatasets from "@/hooks/useGetLatestDatasets"
 import { useActiveAccount } from "thirdweb/react"
+import ReactMarkdown from "react-markdown";
 
 const categories = ["All", "Natural Language Processing", "Computer Vision", "Audio", "Multimodal", "Tabular"]
 
@@ -98,8 +99,9 @@ export default function DatasetsPage() {
             <span className="text-slate-400 font-thin">Datasets</span>
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
-            Access high-quality datasets for machine learning research and development. Each dataset is tokenized as an
-            NFT, creating value for data contributors.
+            Access high-quality datasets for machine learning research and
+            development. Each dataset is tokenized as an NFT, creating value for
+            data contributors.
           </p>
         </div>
 
@@ -109,7 +111,9 @@ export default function DatasetsPage() {
             <div className="flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-red-400" />
               <div className="flex-1">
-                <h3 className="text-red-300 font-medium">Error Loading Datasets</h3>
+                <h3 className="text-red-300 font-medium">
+                  Error Loading Datasets
+                </h3>
                 <p className="text-red-400/80 text-sm mt-1">{error}</p>
               </div>
               <Button
@@ -138,20 +142,32 @@ export default function DatasetsPage() {
                 disabled={isLoading}
               />
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory} disabled={isLoading}>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+              disabled={isLoading}
+            >
               <SelectTrigger className="w-full lg:w-[220px] bg-slate-900/30 border-slate-700 text-white backdrop-blur-sm h-14">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent className="bg-slate-900 border-slate-700 text-white">
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category} className="focus:bg-slate-800">
+                  <SelectItem
+                    key={category}
+                    value={category}
+                    className="focus:bg-slate-800"
+                  >
                     {category}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={sortBy} onValueChange={setSortBy} disabled={isLoading}>
+            <Select
+              value={sortBy}
+              onValueChange={setSortBy}
+              disabled={isLoading}
+            >
               <SelectTrigger className="w-full lg:w-[220px] bg-slate-900/30 border-slate-700 text-white backdrop-blur-sm h-14">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -196,8 +212,12 @@ export default function DatasetsPage() {
             <div className="text-center space-y-4">
               <Loader2 className="h-12 w-12 animate-spin text-slate-400 mx-auto" />
               <div>
-                <h3 className="text-xl font-light text-white mb-2">Loading Datasets</h3>
-                <p className="text-slate-400 font-light">Fetching datasets from the blockchain...</p>
+                <h3 className="text-xl font-light text-white mb-2">
+                  Loading Datasets
+                </h3>
+                <p className="text-slate-400 font-light">
+                  Fetching datasets from the blockchain...
+                </p>
               </div>
             </div>
           </div>
@@ -207,8 +227,13 @@ export default function DatasetsPage() {
         {!isLoading && (
           <div className="mb-8">
             <p className="text-slate-400 font-light">
-              Showing <span className="text-white font-medium">{sortedDatasets.length}</span> of{" "}
-              <span className="text-white font-medium">{datasets.length}</span> datasets
+              Showing{" "}
+              <span className="text-white font-medium">
+                {sortedDatasets.length}
+              </span>{" "}
+              of{" "}
+              <span className="text-white font-medium">{datasets.length}</span>{" "}
+              datasets
             </p>
           </div>
         )}
@@ -227,7 +252,10 @@ export default function DatasetsPage() {
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="border-slate-700 text-slate-300 bg-slate-800/30 text-xs">
+                      <Badge
+                        variant="outline"
+                        className="border-slate-700 text-slate-300 bg-slate-800/30 text-xs"
+                      >
                         {dataset.category}
                       </Badge>
                       {dataset.verified && (
@@ -248,7 +276,7 @@ export default function DatasetsPage() {
                     {dataset.title}
                   </CardTitle>
                   <CardDescription className="text-sm text-slate-400 line-clamp-3 font-light">
-                    {dataset.description}
+                    <ReactMarkdown>{dataset.description}</ReactMarkdown>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -258,11 +286,14 @@ export default function DatasetsPage() {
                       <div className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-700">
                         <div className="flex items-center">
                           <Coins className="h-4 w-4 text-amber-400 mr-2" />
-                          <span className="text-xs text-slate-300 font-light">NFT Value</span>
+                          <span className="text-xs text-slate-300 font-light">
+                            NFT Value
+                          </span>
                         </div>
-                        <span className="text-amber-400 font-medium text-sm">{dataset.nftValue}</span>
+                        <span className="text-amber-400 font-medium text-sm">
+                          {dataset.nftValue}
+                        </span>
                       </div>
-                   
                     </div>
 
                     {/* Tags */}
@@ -277,7 +308,10 @@ export default function DatasetsPage() {
                         </Badge>
                       ))}
                       {dataset.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs bg-slate-800/30 border-slate-700 text-slate-400">
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-slate-800/30 border-slate-700 text-slate-400"
+                        >
                           +{dataset.tags.length - 3}
                         </Badge>
                       )}
@@ -290,7 +324,10 @@ export default function DatasetsPage() {
                         {dataset.author}
                       </div>
                       <div className="flex items-center">
-                        <DownloadStatsComponent itemName={dataset.title} className="text-xs" />
+                        <DownloadStatsComponent
+                          itemName={dataset.title}
+                          className="text-xs"
+                        />
                       </div>
                       <div className="flex items-center">
                         <Calendar className="h-3 w-3 mr-1" />
@@ -304,7 +341,10 @@ export default function DatasetsPage() {
                     {/* Actions */}
                     <div className="flex gap-3 pt-2">
                       <Link href={`/datasets/${dataset.id}`} className="flex-1">
-                        <Button size="sm" className="w-full bg-white text-black hover:bg-slate-100 font-medium">
+                        <Button
+                          size="sm"
+                          className="w-full bg-white text-black hover:bg-slate-100 font-medium"
+                        >
                           <Eye className="h-3 w-3 mr-2" />
                           Explore Dataset
                         </Button>
@@ -323,12 +363,16 @@ export default function DatasetsPage() {
             <div className="w-20 h-20 bg-slate-800/30 border border-slate-700 rounded-lg flex items-center justify-center mx-auto mb-8">
               <Database className="h-10 w-10 text-slate-400" />
             </div>
-            <h3 className="text-2xl font-light text-white mb-4">No datasets uploaded yet</h3>
+            <h3 className="text-2xl font-light text-white mb-4">
+              No datasets uploaded yet
+            </h3>
             <p className="text-slate-400 mb-8 font-light">
               Be the first to contribute a dataset to the decentralized hub.
             </p>
             <Link href="/upload">
-              <Button className="bg-white text-black hover:bg-slate-100 font-medium">Upload Dataset</Button>
+              <Button className="bg-white text-black hover:bg-slate-100 font-medium">
+                Upload Dataset
+              </Button>
             </Link>
           </div>
         )}
@@ -338,15 +382,17 @@ export default function DatasetsPage() {
             <div className="w-20 h-20 bg-slate-800/30 border border-slate-700 rounded-lg flex items-center justify-center mx-auto mb-8">
               <Search className="h-10 w-10 text-slate-400" />
             </div>
-            <h3 className="text-2xl font-light text-white mb-4">No datasets found</h3>
+            <h3 className="text-2xl font-light text-white mb-4">
+              No datasets found
+            </h3>
             <p className="text-slate-400 mb-8 font-light">
               Try adjusting your search criteria or browse all categories.
             </p>
             <Button
               variant="outline"
               onClick={() => {
-                setSearchTerm("")
-                setSelectedCategory("All")
+                setSearchTerm("");
+                setSelectedCategory("All");
               }}
               className="bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600"
             >
@@ -368,5 +414,5 @@ export default function DatasetsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
