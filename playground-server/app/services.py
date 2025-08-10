@@ -124,6 +124,8 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
 
         # Clean up old models if needed
         cleanup_old_models()
+        
+        model_obj = {}
 
         # Load model based on task
         if task == "text-generation":
