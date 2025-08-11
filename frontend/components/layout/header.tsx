@@ -133,8 +133,8 @@ export function Header() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <div className="flex relative md:left-16 lg:left-24 items-center justify-end">
-          {/* <Button 
+        <div className="flex relative md:left-16 lg:left-18 items-center justify-end">
+          {/* <Button
             variant="outline" 
             size="sm" 
             className="hidden sm:inline-flex border-slate-600 text-slate-300 hover:bg-slate-800/50 font-light"
