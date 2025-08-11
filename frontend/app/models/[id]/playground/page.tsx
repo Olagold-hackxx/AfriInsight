@@ -56,7 +56,7 @@ export default function ModelPlaygroundPage() {
   const [confidenceThreshold, setConfidenceThreshold] = useState([0.5]);
   const [returnTimestamps, setReturnTimestamps] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [apiEndpoint, setApiEndpoint] = useState(InferenceServer || "");
+  const [apiEndpoint, setApiEndpoint] = useState(InferenceServer);
   const [history, setHistory] = useState<
     Array<{
       input: string;

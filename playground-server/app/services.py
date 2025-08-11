@@ -97,7 +97,7 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
 
     try:
         # Use DeHug SDK to download model from IPFS
-        local_model = Path("/tmp/dehug") / f"{model_hash}.zip"
+        local_model = Path("/tmp/dehug") / f"{model_hash}"
         if local_model.exists():
             logger.info(f"Found existing model for hash {model_hash} at {local_model}, skipping download")
             model_path = local_model
@@ -108,12 +108,12 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
 
             logger.info(f"Model {model_hash} downloaded to {model_path}")
 
-        # Unzip model is in a zip file
-        extract_dir = model_path.parent / model_path.stem
-        logger.info(f"Extracting model zip to {extract_dir}")
-        with zipfile.ZipFile(model_path, "r") as zip_ref:
-            zip_ref.extractall(extract_dir)
-        model_path = extract_dir    
+            # Unzip model is in a zip file
+            extract_dir = model_path.parent / model_path.stem
+            logger.info(f"Extracting model zip to {extract_dir}")
+            with zipfile.ZipFile(model_path, "r") as zip_ref:
+                zip_ref.extractall(extract_dir)
+            model_path = extract_dir    
 
         # Check model size
         model_size = get_model_size(model_path)
@@ -124,7 +124,7 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
             )
 
         # Clean up old models if needed
-        cleanup_old_models()
+        # cleanup_old_models()
 
         model_obj = {}
 
