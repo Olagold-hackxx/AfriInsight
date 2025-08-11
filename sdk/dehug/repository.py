@@ -61,7 +61,7 @@ class DeHugRepository:
         """
         try:
             download_dir = self.config.get("download_dir", "/tmp/dehug")
-            download_path = f"{download_dir}/{name_or_cid}"
+            download_path = f"{download_dir}/{name_or_cid}.zip"
             metadata = load_content_from_cid(name_or_cid, download_path, self.ipfs_gateway)
             return metadata
         except Exception as e:

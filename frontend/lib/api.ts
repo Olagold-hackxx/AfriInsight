@@ -38,34 +38,33 @@ export interface NFTMetadata {
   attributes: NFTAttribute[];
 }
 
-
 export interface ModelDetails {
-  id: string
-  name: string
-  type: string
-  description: string
-  author: string
-  downloads: number
-  likes: number
-  views: number
-  forks: number
-  tags: string[]
-  modelCard: string
-  examples: string[]
-  license: string
-  size: string
-  format: string
-  uploadDate: string
-  lastUpdated: string
-  ipfsHash: string
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  author: string;
+  downloads: number;
+  likes: number;
+  views: number;
+  forks: number;
+  tags: string[];
+  modelCard: string;
+  examples: string[];
+  license: string;
+  size: string;
+  format: string;
+  uploadDate: string;
+  lastUpdated: string;
+  ipfsHash: string;
   parameters: {
     [key: string]: {
-      min: number
-      max: number
-      default: number
-      description: string
-    }
-  }
+      min: number;
+      max: number;
+      default: number;
+      description: string;
+    };
+  };
 }
 
 // Mock model data for development
@@ -82,7 +81,8 @@ const mockModels: Record<string, ModelDetails> = {
     views: 45678,
     forks: 234,
     tags: ["gpt-2", "text-generation", "creative-writing", "fine-tuned"],
-    modelCard: "This model is a fine-tuned version of GPT-2 Small, specifically optimized for creative writing tasks.",
+    modelCard:
+      "This model is a fine-tuned version of GPT-2 Small, specifically optimized for creative writing tasks.",
     examples: [
       "Once upon a time in a distant galaxy",
       "The future of artificial intelligence is",
@@ -101,7 +101,8 @@ const mockModels: Record<string, ModelDetails> = {
         min: 0.1,
         max: 2.0,
         default: 0.8,
-        description: "Controls randomness in generation. Higher values make output more random.",
+        description:
+          "Controls randomness in generation. Higher values make output more random.",
       },
       max_length: {
         min: 10,
@@ -113,19 +114,22 @@ const mockModels: Record<string, ModelDetails> = {
         min: 0.1,
         max: 1.0,
         default: 0.9,
-        description: "Nucleus sampling parameter. Lower values make output more focused.",
+        description:
+          "Nucleus sampling parameter. Lower values make output more focused.",
       },
       top_k: {
         min: 1,
         max: 100,
         default: 50,
-        description: "Top-k sampling parameter. Limits vocabulary for each step.",
+        description:
+          "Top-k sampling parameter. Limits vocabulary for each step.",
       },
       repetition_penalty: {
         min: 1.0,
         max: 2.0,
         default: 1.1,
-        description: "Penalty for repetition. Higher values reduce repetitive text.",
+        description:
+          "Penalty for repetition. Higher values reduce repetitive text.",
       },
     },
   },
@@ -141,7 +145,8 @@ const mockModels: Record<string, ModelDetails> = {
     views: 32145,
     forks: 167,
     tags: ["bert", "classification", "african-languages", "multilingual"],
-    modelCard: "This model classifies text across 15 African languages with high accuracy.",
+    modelCard:
+      "This model classifies text across 15 African languages with high accuracy.",
     examples: [
       "Habari za asubuhi, hali ya hewa ni nzuri leo",
       "Bawo ni, emi ni omo Yoruba",
@@ -173,14 +178,16 @@ const mockModels: Record<string, ModelDetails> = {
     id: "3",
     name: "Swahili Speech Recognition",
     type: "Speech Recognition",
-    description: "A Wav2Vec2-based model trained on Swahili speech data for automatic speech recognition tasks.",
+    description:
+      "A Wav2Vec2-based model trained on Swahili speech data for automatic speech recognition tasks.",
     author: "east-africa-ai",
     downloads: 45678,
     likes: 987,
     views: 18234,
     forks: 89,
     tags: ["wav2vec2", "speech-recognition", "swahili", "asr"],
-    modelCard: "High-accuracy Swahili speech recognition model trained on diverse dialects.",
+    modelCard:
+      "High-accuracy Swahili speech recognition model trained on diverse dialects.",
     examples: [
       "Upload an audio file in Swahili to transcribe",
       "Supported formats: WAV, MP3, FLAC",
@@ -193,7 +200,7 @@ const mockModels: Record<string, ModelDetails> = {
     lastUpdated: "2024-01-16",
     ipfsHash: "QmZwCPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdI",
     parameters: {
-       chunk_length: {
+      chunk_length: {
         min: 5,
         max: 30,
         default: 10,
@@ -207,7 +214,7 @@ const mockModels: Record<string, ModelDetails> = {
       },
     },
   },
-}
+};
 
 export interface UserUpload {
   id: string;
@@ -251,55 +258,60 @@ export interface SyncResult {
   error?: string;
 }
 
-
 export interface InferenceRequest {
-  model_hash: string
-  task: string
-  input_text?: string
-  parameters: Record<string, any>
+  model_hash: string;
+  task: string;
+  input_text: string;
+  parameters?: Record<string, any>;
 }
 
 export interface InferenceResponse {
-  success: boolean
+  success: boolean;
   result?: {
-    generated_text?: string
+    generated_text?: string;
     predictions?: Array<{
-      label: string
-      score: number
-    }>
+      label: string;
+      score: number;
+    }>;
     transcription?: {
-      text: string
-      timestamps?: Array<{ start: number; end: number; text: string }>
-    }
-  }
-  error?: string
+      text: string;
+      timestamps?: Array<{ start: number; end: number; text: string }>;
+    };
+  };
+  error?: string;
   model_info?: {
-    hash: string
-    task: string
-    cached: boolean
-  }
-  processing_time?: number
-  request_id: string
+    hash: string;
+    task: string;
+    cached: boolean;
+  };
+  processing_time?: number;
+  request_id: string;
 }
 
 export interface PlaygroundInferenceService {
-  testConnection(endpoint: string): Promise<{ healthy: boolean; cached_models: number }>
-  generateText(endpoint: string, request: InferenceRequest): Promise<InferenceResponse>
+  testConnection(
+    endpoint: string
+  ): Promise<{ healthy: boolean; cached_models: number }>;
+  generateText(
+    endpoint: string,
+    request: InferenceRequest
+  ): Promise<InferenceResponse>;
   generateWithFile(
     endpoint: string,
     file: File,
     modelHash: string,
     task: string,
-    parameters: Record<string, any>,
-  ): Promise<InferenceResponse>
+    parameters: Record<string, any>
+  ): Promise<InferenceResponse>;
 }
-
 
 // Playground Inference Service Implementation
 export const PlaygroundInferenceService: PlaygroundInferenceService = {
-  async testConnection(endpoint: string): Promise<{ healthy: boolean; cached_models: number }> {
+  async testConnection(
+    endpoint: string
+  ): Promise<{ healthy: boolean; cached_models: number }> {
     // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     try {
       // In a real implementation, this would make an actual HTTP request
@@ -310,65 +322,30 @@ export const PlaygroundInferenceService: PlaygroundInferenceService = {
       return {
         healthy: true,
         cached_models: Math.floor(Math.random() * 10) + 5,
-      }
+      };
     } catch (error) {
-      throw new Error("Connection failed")
+      throw new Error("Connection failed");
     }
   },
 
-  async generateText(endpoint: string, request: InferenceRequest): Promise<InferenceResponse> {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000))
-
+  async generateText(
+    endpoint: string,
+    request: InferenceRequest
+  ): Promise<InferenceResponse> {
     try {
-      // In a real implementation, this would make an actual HTTP request
-      // const response = await fetch(`${endpoint}/infer`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(request)
-      // })
-      // const result = await response.json()
-
-      // Mock response based on task type
-      const startTime = Date.now()
-      let mockResult: any
-
-      if (request.task === "text-generation") {
-        mockResult = {
-          generated_text: `Based on your input: "${request.input_text}" - This is a generated response that continues the conversation in a meaningful way. The model has been trained to understand context and provide relevant, coherent responses.`,
-        }
-      } else if (request.task === "text-classification") {
-        const sentiments = ["Positive", "Negative", "Neutral"]
-        const confidence = (0.7 + Math.random() * 0.3).toFixed(2)
-        const sentiment = sentiments[Math.floor(Math.random() * sentiments.length)]
-        mockResult = {
-          predictions: [
-            { label: sentiment, score: Number.parseFloat(confidence) },
-            { label: sentiments[(sentiments.indexOf(sentiment) + 1) % 3], score: Math.random() * 0.3 },
-            { label: sentiments[(sentiments.indexOf(sentiment) + 2) % 3], score: Math.random() * 0.2 },
-          ],
-        }
-      }
-
-      const processingTime = (Date.now() - startTime) / 1000
-
-      return {
-        success: true,
-        result: mockResult,
-        model_info: {
-          hash: request.model_hash,
-          task: request.task,
-          cached: true,
-        },
-        processing_time: processingTime,
-        request_id: `req_${Date.now()}`,
-      }
+      console.log("Generating text with request:", request);
+      const response = await axios.post(`${endpoint}/infer`, request, {
+        headers: { "Content-Type": "application/json" },
+      });
+      const result = response.data;
+      return result;
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred",
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
         request_id: `req_${Date.now()}`,
-      }
+      };
     }
   },
 
@@ -377,10 +354,12 @@ export const PlaygroundInferenceService: PlaygroundInferenceService = {
     file: File,
     modelHash: string,
     task: string,
-    parameters: Record<string, any>,
+    parameters: Record<string, any>
   ): Promise<InferenceResponse> {
     // Simulate file upload and processing delay
-    await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 3000))
+    await new Promise((resolve) =>
+      setTimeout(resolve, 2000 + Math.random() * 3000)
+    );
 
     try {
       // In a real implementation, this would make an actual HTTP request with FormData
@@ -396,8 +375,8 @@ export const PlaygroundInferenceService: PlaygroundInferenceService = {
       // })
       // const result = await response.json()
 
-      const startTime = Date.now()
-      let mockResult: any
+      const startTime = Date.now();
+      let mockResult: any;
 
       if (task === "image-classification") {
         mockResult = {
@@ -406,7 +385,7 @@ export const PlaygroundInferenceService: PlaygroundInferenceService = {
             { label: "Elephant", score: 0.123 },
             { label: "Giraffe", score: 0.025 },
           ],
-        }
+        };
       } else if (task === "speech-recognition") {
         mockResult = {
           transcription: {
@@ -419,10 +398,10 @@ export const PlaygroundInferenceService: PlaygroundInferenceService = {
               ],
             }),
           },
-        }
+        };
       }
 
-      const processingTime = (Date.now() - startTime) / 1000
+      const processingTime = (Date.now() - startTime) / 1000;
 
       return {
         success: true,
@@ -434,16 +413,17 @@ export const PlaygroundInferenceService: PlaygroundInferenceService = {
         },
         processing_time: processingTime,
         request_id: `req_${Date.now()}`,
-      }
+      };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "File processing failed",
+        error:
+          error instanceof Error ? error.message : "File processing failed",
         request_id: `req_${Date.now()}`,
-      }
+      };
     }
   },
-}
+};
 
 // API Functions
 export class DeHugAPI {
@@ -720,20 +700,19 @@ export class DeHugAPI {
     try {
       // In a real implementation, this would make an API call
       // For now, return mock data
-      const model = mockModels[modelId]
+      const model = mockModels[modelId];
 
       if (!model) {
-        throw new Error(`Model with ID ${modelId} not found`)
+        throw new Error(`Model with ID ${modelId} not found`);
       }
 
       // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      return model
+      return model;
     } catch (error) {
-      console.error("Error fetching model:", error)
-      throw error
+      console.error("Error fetching model:", error);
+      throw error;
     }
   }
 }
-

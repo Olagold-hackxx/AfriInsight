@@ -32,18 +32,20 @@ import {
 import Link from "next/link";
 import useGetContentMetadata from "@/hooks/DeHug/useGetContentMetadata";
 import { toast } from "react-toastify";
-import { DeHugAPI, PlaygroundInferenceService } from "@/lib/api";
+import {PlaygroundInferenceService } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
+
+const InferenceServer =
+  process.env.NEXT_PUBLIC_INFERENCE_SERVER || "http://localhost:8000";
 
 export default function ModelPlaygroundPage() {
   const params = useParams();
   const modelId = params.id as string;
 
   
-  const { metadata, isLoading: isMetadataLoading } =
+  const { metadata: model, isLoading: isMetadataLoading } =
     useGetContentMetadata(Number.parseInt(modelId));
 
-  const [model, setModel] = useState<any>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -54,7 +56,7 @@ export default function ModelPlaygroundPage() {
   const [confidenceThreshold, setConfidenceThreshold] = useState([0.5]);
   const [returnTimestamps, setReturnTimestamps] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [apiEndpoint, setApiEndpoint] = useState("http://localhost:8000");
+  const [apiEndpoint, setApiEndpoint] = useState(InferenceServer || "");
   const [history, setHistory] = useState<
     Array<{
       input: string;
@@ -66,21 +68,6 @@ export default function ModelPlaygroundPage() {
     }>
   >([]);
 
-  useEffect(() => {
-    if (metadata) {
-      // Find the model by ID{
-          setModel({
-            ...metadata,
-            hash: metadata.ipfsHash,
-            type: metadata.category || "text-generation",
-          });
-
-          // Set example input if available
-          if (metadata.examples && metadata.examples.length > 0) {
-            setInput(metadata.examples[0]);
-          }
-        }
-  }, [metadata, modelId]);
 
   const handleGenerate = async () => {
     if (!model || (!input.trim() && !selectedFile)) return;
@@ -101,8 +88,8 @@ export default function ModelPlaygroundPage() {
 
       // For file-based tasks, we'll simulate the API call
       if (
-        model.type === "image-classification" ||
-        model.type === "speech-recognition"
+        model.category === "image-classification" ||
+        model.category === "speech-recognition"
       ) {
         if (!selectedFile) {
           toast.error("Please select a file for this task type");
@@ -113,7 +100,7 @@ export default function ModelPlaygroundPage() {
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         let formattedOutput = "";
-        if (model.type === "image-classification") {
+        if (model.category === "image-classification") {
           formattedOutput = "Lion: 85.2%\nElephant: 12.3%\nGiraffe: 2.5%";
         } else {
           formattedOutput = "Sannu da zuwa. Yaya kake? Na ji daɗi sosai.";
@@ -146,10 +133,9 @@ export default function ModelPlaygroundPage() {
         const result = await PlaygroundInferenceService.generateText(
           apiEndpoint,
           {
-            model_hash: model.ipfsHash,
-            input_text: input,
-            task: "text-generation",
-            parameters,
+            "model_hash": model?.properties?.ipfsHash,
+            "input_text": input,
+            "task": "text-generation"
           }
         );
 
@@ -357,7 +343,7 @@ export default function ModelPlaygroundPage() {
               <Input
                 value={apiEndpoint}
                 onChange={(e) => setApiEndpoint(e.target.value)}
-                placeholder="http://localhost:8000"
+                placeholder={InferenceServer || ""}
                 className="bg-gray-800/50 border-gray-700 text-white"
               />
               <Button
@@ -389,7 +375,7 @@ export default function ModelPlaygroundPage() {
                     by {model.author}
                   </p>
                   <p className="text-xs text-gray-500 font-mono mt-1">
-                    Model Hash: {model.hash}
+                    Model Hash: {model?.properties?.ipfsHash}
                   </p>
                 </div>
               </div>

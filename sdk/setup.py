@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="dehug",
-    version="0.2.0",
+    version="0.2.2",
     author="DeHug Team",
     author_email="contact@dehug.io",
     description="Decentralized Hugging Face - AI models and datasets from IPFS/Filecoin",

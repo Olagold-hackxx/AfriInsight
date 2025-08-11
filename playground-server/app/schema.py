@@ -27,19 +27,20 @@ class InferenceRequest(BaseModel):
     input_text: str
     parameters: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
-class InferenceResponse(BaseModel):
-    success: bool
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
-    model_info: Optional[Dict[str, str]] = None
-    processing_time: Optional[float] = None
-    request_id: str
-
 
 class ModelInfo(BaseModel):
     hash: str
     task: str
-    status: str
+    status: Optional[str] = None
     cached: bool
     size_mb: Optional[float] = None
     last_used: Optional[datetime] = None
+
+
+class InferenceResponse(BaseModel):
+    success: bool
+    result: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+    model_info: Optional[ModelInfo] = None
+    processing_time: Optional[float] = None
+    request_id: str

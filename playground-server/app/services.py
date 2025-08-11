@@ -97,15 +97,16 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
 
     try:
         # Use DeHug SDK to download model from IPFS
-        logger.info(f"Downloading model {model_hash} using DeHug SDK")
-        model_path = await asyncio.to_thread(
-            dehug_repo.load_model, model_hash
-        )
+        local_model = Path("/tmp/dehug") / f"{model_hash}.zip"
+        if local_model.exists():
+            logger.info(f"Found existing model for hash {model_hash} at {local_model}, skipping download")
+            model_path = local_model
+        else:
+            logger.info(f"Downloading model {model_hash} using DeHug SDK")
+            model_path = await asyncio.to_thread(dehug_repo.load_model, model_hash)
 
-        logger.info(f"Model {model_hash} downloaded to {model_path}")
 
-        # Cache the model
-        model_cache[cache_key] = model_obj
+            logger.info(f"Model {model_hash} downloaded to {model_path}")
 
         # Unzip model is in a zip file
         extract_dir = model_path.parent / model_path.stem
@@ -124,7 +125,7 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
 
         # Clean up old models if needed
         cleanup_old_models()
-        
+
         model_obj = {}
 
         # Load model based on task
@@ -191,6 +192,9 @@ async def load_model(model_hash: str, task: str) -> Dict[str, Any]:
             raise HTTPException(status_code=400, detail=f"Unsupported task: {task}")
 
         logger.info(f"Model {cache_key} loaded and cached successfully")
+
+        # Cache the model
+        model_cache[cache_key] = model_obj
 
         return model_obj
 

@@ -102,6 +102,8 @@ const examplePrompts = {
   ],
 };
 
+const InferenceServer = process.env.NEXT_PUBLIC_INFERENCE_SERVER || "http://localhost:8000";
+
 export default function PlaygroundPage() {
   const [selectedModel, setSelectedModel] = useState<ModelCard | null>(null);
   const [input, setInput] = useState("");
@@ -114,7 +116,7 @@ export default function PlaygroundPage() {
   const [confidenceThreshold, setConfidenceThreshold] = useState([0.5]);
   const [returnTimestamps, setReturnTimestamps] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [apiEndpoint, setApiEndpoint] = useState("http://localhost:8000");
+  const [apiEndpoint, setApiEndpoint] = useState(InferenceServer || "");
   const [history, setHistory] = useState<
     Array<{
       input: string;
@@ -358,7 +360,7 @@ export default function PlaygroundPage() {
               <Input
                 value={apiEndpoint}
                 onChange={(e) => setApiEndpoint(e.target.value)}
-                placeholder="http://localhost:8000"
+                placeholder={InferenceServer || ""}
                 className="bg-gray-800/50 border-gray-700 text-white"
               />
               <Button
